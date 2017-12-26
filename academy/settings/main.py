@@ -101,6 +101,13 @@ USER_PHOTOS_DIR_NAME = 'user-photos'
 SERVER_EMAIL = 'root@localhost'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
+INITIAL_ADMIN = {
+    'email': 'admin@admin',
+    'password': 'admin',
+    'first_name': 'fname',
+    'last_name': 'lname',
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
