@@ -66,7 +66,6 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
     objects = AuthUserManager()
 
     class Meta:
-        # app_label = 'academy_site'
         db_table = 'auth_user'
         verbose_name = 'authenticated user'
         verbose_name_plural = 'authenticated users'
@@ -89,3 +88,19 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
     @property
     def is_admin(self):
         return self.is_superuser is True
+
+
+class SiteUser(models.Model):
+    user = models.OneToOneField(AuthUser, on_delete=models.CASCADE)
+    birthdate = models.DateField(null=True, blank=True)
+    phone = models.CharField(null=True, blank=True, max_length=20)
+    address = models.CharField(null=True, blank=True, max_length=50)
+    postcode = models.IntegerField(null=True, blank=True)
+    # country
+    # city
+    # lessons
+
+    class Meta:
+        db_table = 'site_user'
+        verbose_name = 'site user'
+        verbose_name_plural = 'site users'
