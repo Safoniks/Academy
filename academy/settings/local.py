@@ -1,3 +1,5 @@
+from .main import INSTALLED_APPS, MIDDLEWARE
+
 DEBUG = True
 
 SECRET_KEY = 'k@^%p5)@&p46+o3ae%99h_&qbr9g+^!@4h5lnlf5!k(=1&n=2v'
@@ -15,6 +17,9 @@ DATABASES = {
         'PORT': '',
     }
 }
+
+INSTALLED_APPS.append('debug_toolbar')
+MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = '../tmp/newsletters/'

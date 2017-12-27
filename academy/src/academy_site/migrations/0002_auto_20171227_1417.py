@@ -4,10 +4,10 @@ from django.db import migrations
 
 
 def create_admin(apps, schema_editor):
-    from academy.src.academy_site.models import AuthUser
+    from django.contrib.auth import get_user_model
     from django.conf import settings
     admin_data = settings.INITIAL_ADMIN
-    AuthUser.objects.create_admin(**admin_data)
+    get_user_model().objects.create_admin(**admin_data)
 
 
 class Migration(migrations.Migration):

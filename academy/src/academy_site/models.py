@@ -66,6 +66,7 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
     objects = AuthUserManager()
 
     class Meta:
+        # app_label = 'academy_site'
         db_table = 'auth_user'
         verbose_name = 'authenticated user'
         verbose_name_plural = 'authenticated users'

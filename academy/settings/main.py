@@ -1,6 +1,8 @@
 import os
+import sys
 
 BASE_DIR = os.path.abspath(os.path.join(__file__, '../../../'))
+sys.path.append(os.path.join(BASE_DIR, 'academy', 'src'))
 
 SECRET_KEY = 'k@^%p5)@&p46+o3ae%99h_&qbr9g+^!@4h5lnlf5!k(=1&n=2v'
 
@@ -25,14 +27,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'debug_toolbar',
-
-    'academy.src.academy_site.apps.AcademySiteConfig',
-    'academy.src.academy_admin.apps.AcademyAdminConfig',
+    'academy_site',
+    'academy_admin',
 ]
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
