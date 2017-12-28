@@ -10,5 +10,7 @@ urlpatterns = [
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^signin/$', views.signin, name='signin'),
     url(r'^contact_us/$', views.contact_us, name='contact_us'),
+    url(r'^profile/$', views.profile, name='profile'),
+    url(r'^profile/edit/$', views.profile_edit, name='profile_edit'),
     url(r'^logout/$', logout, {'next_page': settings.LOGOUT_REDIRECT_URL}, name='logout'),
 ]

@@ -1,0 +1,13 @@
+<html>
+<body>
+SITE
+{% if user.is_authenticated %}
+<p>Welcome, {{ user.email }}. Thanks for logging in.</p>
+<p><a href="{% url 'academy_site:profile_edit' %}">[edit]</a></p>
+<p><a href="{% url 'academy_site:logout' %}">[logout]</a></p>
+{% else %}
+<p>Welcome, new user. Please log in.</p>
+{% endif%}
+
+</body>
+</html>

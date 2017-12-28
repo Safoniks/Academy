@@ -30,3 +30,13 @@ class ContactUsForm(forms.ModelForm):
     class Meta:
         model = ContactUs
         fields = ('name', 'email', 'message', )
+
+
+class ProfileForm(forms.Form):
+    first_name = forms.CharField(max_length=50)
+    last_name = forms.CharField(max_length=50)
+    birthdate = forms.DateField()
+    email = forms.EmailField()
+    phone = forms.CharField()
+    address = forms.CharField()
+    postcode = forms.IntegerField()
