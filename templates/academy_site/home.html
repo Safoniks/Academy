@@ -1,0 +1,31 @@
+<html>
+<body>
+SITE
+{% if user.is_authenticated %}
+<p>Welcome, {{ user.email }}. Thanks for logging in.</p>
+<p><a href="{% url 'academy_site:logout' %}">[logout]</a></p>
+{% else %}
+<p>Welcome, new user. Please log in.</p>
+
+
+{% if signup_form %}
+<h2>Sign up</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ signup_form.as_p }}
+    <button type="submit">Sign up</button>
+</form>
+{% endif %}
+
+{% if signin_form %}
+<h2>Sign in</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ signin_form.as_p }}
+    <button type="submit">Sign in</button>
+</form>
+{% endif %}
+{% endif %}
+
+</body>
+</html>

@@ -88,6 +88,7 @@ USE_L10N = True
 USE_TZ = True
 
 AUTH_USER_MODEL = 'academy_site.AuthUser'
+LOGOUT_REDIRECT_URL = 'academy_site:home'
 
 
 STATIC_URL = '/static/'
