@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
 
+from .models import ContactUs
+
 AuthUser = get_user_model()
 
 
@@ -22,3 +24,9 @@ class SignUpForm(forms.ModelForm):
 class SignInForm(forms.Form):
     email = forms.EmailField(required=True)
     password = forms.CharField(required=True, max_length=20)
+
+
+class ContactUsForm(forms.ModelForm):
+    class Meta:
+        model = ContactUs
+        fields = ('name', 'email', 'message', )

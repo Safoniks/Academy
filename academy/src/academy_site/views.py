@@ -2,7 +2,7 @@ from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 
-from .forms import SignUpForm, SignInForm
+from .forms import SignUpForm, SignInForm, ContactUsForm
 
 from .models import SiteUser
 AuthUser = get_user_model()
@@ -37,7 +37,6 @@ def signin(request):
     if request.method == 'POST':
         form = SignInForm(request.POST)
         if form.is_valid():
-            # form.save(commit=False)
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
             user = authenticate(email=email, password=password)
@@ -49,5 +48,18 @@ def signin(request):
         form = SignInForm()
     return render(request, 'academy_site/home.html', {
         'signin_form': form,
+        'user': request.user
+    })
+
+
+def contact_us(request):
+    if request.method == 'POST':
+        form = ContactUsForm(request.POST)
+        if form.is_valid():
+            form.save()
+    else:
+        form = ContactUsForm()
+    return render(request, 'academy_site/home.html', {
+        'contact_us_form': form,
         'user': request.user
     })

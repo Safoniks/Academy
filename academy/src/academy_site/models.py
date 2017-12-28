@@ -104,3 +104,14 @@ class SiteUser(models.Model):
         db_table = 'site_user'
         verbose_name = 'site user'
         verbose_name_plural = 'site users'
+
+
+class ContactUs(models.Model):
+    name = models.CharField(max_length=20)
+    email = models.EmailField()
+    message = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'contact_us'
+        verbose_name = 'contact us'
+        verbose_name_plural = 'contacts us'

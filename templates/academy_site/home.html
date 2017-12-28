@@ -27,5 +27,15 @@ SITE
 {% endif %}
 {% endif %}
 
+
+{% if contact_us_form %}
+<h2>Contact us</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ contact_us_form.as_p }}
+    <button type="submit">Send</button>
+</form>
+{% endif %}
+
 </body>
 </html>
