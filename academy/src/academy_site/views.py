@@ -77,14 +77,26 @@ def profile(request):
 
 @login_required
 def profile_edit(request):
+    user = request.user
     if request.method == 'POST':
-        form = ProfileForm(request.POST)
+        form = ProfileForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            form.save(user)
+            return redirect('academy_site:profile')
     else:
-        form = ProfileForm()
+        user_profile_data = {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'photo': user.photo,
+            'birthdate': user.siteuser.birthdate,
+            'phone': user.siteuser.phone,
+            'address': user.siteuser.address,
+            'postcode': user.siteuser.postcode,
+        }
+        form = ProfileForm(initial=user_profile_data)
     context = {
-        'user': request.user,
+        'user': user,
         'edit_form': form,
     }
     return render(request, 'academy_site/profile_edit.html', context)

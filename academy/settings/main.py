@@ -89,7 +89,8 @@ USE_TZ = True
 
 AUTH_USER_MODEL = 'academy_site.AuthUser'
 LOGOUT_REDIRECT_URL = 'academy_site:home'
-
+LOGIN_URL = 'academy_site:signin'
+LOGIN_REDIRECT_URL = 'academy_site:profile'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')

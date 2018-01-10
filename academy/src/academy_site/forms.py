@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 
-from .models import ContactUs
+from .models import ContactUs, SiteUser
 
 AuthUser = get_user_model()
 
@@ -33,10 +33,28 @@ class ContactUsForm(forms.ModelForm):
 
 
 class ProfileForm(forms.Form):
-    first_name = forms.CharField(max_length=50)
-    last_name = forms.CharField(max_length=50)
+    first_name = forms.CharField()
+    last_name = forms.CharField()
     birthdate = forms.DateField()
     email = forms.EmailField()
     phone = forms.CharField()
     address = forms.CharField()
     postcode = forms.IntegerField()
+    photo = forms.ImageField()
+
+    # def clean(self):
+    #     form_data = self.cleaned_data
+    #     if form_data['password'] != form_data['password_repeat']:
+    #         self._errors["password"] = ["Password do not match"]  # Will raise a error message
+    #         del form_data['password']
+    #     return form_data
+
+    def save(self, auth_user):
+        data = self.cleaned_data
+        auth_user.email = data.pop('email')
+        auth_user.first_name = data.pop('first_name')
+        auth_user.last_name = data.pop('last_name')
+        auth_user.photo = data.pop('photo')
+        auth_user.save()
+
+        SiteUser.objects.filter(user=auth_user).update(**data)
