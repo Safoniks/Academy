@@ -25,7 +25,8 @@ def signup(request):
             password = form.cleaned_data.get('password')
             user = authenticate(email=email, password=password)
             login(request, user)
-            return redirect('academy_site:home')
+            redirect_to = request.GET.get('next', 'academy_site:home')
+            return redirect(redirect_to)
     else:
         form = SignUpForm()
     return render(request, 'academy_site/home.html', {
@@ -43,7 +44,8 @@ def signin(request):
             user = authenticate(email=email, password=password)
             if user and user.is_site_user:
                 login(request, user)
-                return redirect('academy_site:home')
+                redirect_to = request.GET.get('next', 'academy_site:home')
+                return redirect(redirect_to)
             else:
                 form = SignInForm()
     else:
@@ -67,7 +69,7 @@ def contact_us(request):
     })
 
 
-@login_required
+@login_required(login_url='academy_site:signin')
 def profile(request):
     context = {
         'user': request.user
@@ -75,14 +77,15 @@ def profile(request):
     return render(request, 'academy_site/profile.html', context)
 
 
-@login_required
+@login_required(login_url='academy_site:signin')
 def profile_edit(request):
     user = request.user
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES)
         if form.is_valid():
             form.save(user)
-            return redirect('academy_site:profile')
+            redirect_to = request.GET.get('next', 'academy_site:profile')
+            return redirect(redirect_to)
     else:
         user_profile_data = {
             'first_name': user.first_name,

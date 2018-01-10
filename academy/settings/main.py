@@ -88,9 +88,10 @@ USE_L10N = True
 USE_TZ = True
 
 AUTH_USER_MODEL = 'academy_site.AuthUser'
-LOGOUT_REDIRECT_URL = 'academy_site:home'
-LOGIN_URL = 'academy_site:signin'
-LOGIN_REDIRECT_URL = 'academy_site:profile'
+SITE_LOGOUT_REDIRECT_URL = 'academy_site:home'
+ADMIN_LOGOUT_REDIRECT_URL = 'academy_admin:login'
+# LOGIN_URL = 'academy_site:signin'
+# LOGIN_REDIRECT_URL = 'academy_site:profile'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
@@ -98,6 +99,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data/media/')
 USER_PHOTOS_DIR_NAME = 'user-photos'
+PARTNER_LOGOS_DIR_NAME = 'partner-logos'
+CITY_PHOTOS_DIR_NAME = 'city-photos'
 
 SERVER_EMAIL = 'root@localhost'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'

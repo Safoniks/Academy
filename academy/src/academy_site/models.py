@@ -7,9 +7,9 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
 
-def get_image_path(instance, filename):
+def get_image_path(instance, filename, dir_name):
     photo_name = str(uuid.uuid4()) + '.' + secure_filename(filename).rsplit('.', 1)[-1]
-    return os.path.join(settings.USER_PHOTOS_DIR_NAME, photo_name)
+    return os.path.join(dir_name, photo_name)
 
 
 class AuthUserManager(BaseUserManager):
@@ -53,11 +53,15 @@ class AuthUserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
+def get_user_photo_path(*args):
+    return get_image_path(*args, dir_name=settings.USER_PHOTOS_DIR_NAME)
+
+
 class AuthUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50, null=True, blank=True)
     last_name = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(unique=True)
-    photo = models.ImageField(upload_to=get_image_path, null=True, blank=True)
+    photo = models.ImageField(upload_to=get_user_photo_path, null=True, blank=True)
     join_date = models.DateTimeField(auto_now_add=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -115,3 +119,38 @@ class ContactUs(models.Model):
         db_table = 'contact_us'
         verbose_name = 'contact us'
         verbose_name_plural = 'contacts us'
+
+
+def get_partner_logo_path(*args):
+    return get_image_path(*args, dir_name=settings.PARTNER_LOGOS_DIR_NAME)
+
+
+class Partner(models.Model):
+    name = models.CharField(max_length=20)
+    link = models.URLField()
+    logo = models.ImageField(upload_to=get_partner_logo_path)
+
+    class Meta:
+        db_table = 'partner'
+        verbose_name = 'partner'
+        verbose_name_plural = 'partners'
+
+
+def get_city_photo_path(*args):
+    return get_image_path(*args, dir_name=settings.CITY_PHOTOS_DIR_NAME)
+
+
+class City(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.TextField(null=True, blank=True)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    photo = models.ImageField(upload_to=get_city_photo_path, null=True, blank=True)
+    school_address = models.CharField(max_length=100)
+    last_update = models.DateTimeField(blank=True, null=True)
+    partner = models.ManyToManyField(Partner)
+
+    class Meta:
+        db_table = 'city'
+        verbose_name = 'city'
+        verbose_name_plural = 'cities'
