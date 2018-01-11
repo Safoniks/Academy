@@ -109,3 +109,4 @@ venv.bak/
 /tmp/
 /data/
 /static/
+/academy/settings/local.py

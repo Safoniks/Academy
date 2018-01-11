@@ -6,6 +6,8 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
+from .validators import positive_number
+
 
 def get_image_path(instance, filename, dir_name):
     photo_name = str(uuid.uuid4()) + '.' + secure_filename(filename).rsplit('.', 1)[-1]
@@ -95,7 +97,7 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
 
 
 class SiteUser(models.Model):
-    user = models.OneToOneField(AuthUser, on_delete=models.CASCADE)
+    auth_user = models.OneToOneField(AuthUser, on_delete=models.CASCADE)
     birthdate = models.DateField(null=True, blank=True)
     phone = models.CharField(null=True, blank=True, max_length=20)
     address = models.CharField(null=True, blank=True, max_length=50)
@@ -135,6 +137,9 @@ class Partner(models.Model):
         verbose_name = 'partner'
         verbose_name_plural = 'partners'
 
+    def __str__(self):
+        return self.name
+
 
 def get_city_photo_path(*args):
     return get_image_path(*args, dir_name=settings.CITY_PHOTOS_DIR_NAME)
@@ -154,3 +159,93 @@ class City(models.Model):
         db_table = 'city'
         verbose_name = 'city'
         verbose_name_plural = 'cities'
+
+    def __str__(self):
+        return self.name
+
+
+def get_theme_photo_path(*args):
+    return get_image_path(*args, dir_name=settings.THEME_PHOTOS_DIR_NAME)
+
+
+class Theme(models.Model):
+    name = models.CharField(max_length=50)
+    photo = models.ImageField(upload_to=get_theme_photo_path, null=True, blank=True)
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'theme'
+        verbose_name = 'theme'
+        verbose_name_plural = 'themes'
+
+    def __str__(self):
+        return self.name
+
+
+class Lesson(models.Model):
+    PLANNED = 'planned'
+    AVAILABLE = 'available'
+    CANCELLED = 'cancelled'
+    SOLD_OUT = 'sold-out'
+    ARCHIVED = 'archived'
+
+    STATUS_CHOICES = (
+        (PLANNED, PLANNED),
+        (AVAILABLE, AVAILABLE),
+        (CANCELLED, CANCELLED),
+        (SOLD_OUT, SOLD_OUT),
+        (ARCHIVED, ARCHIVED),
+    )
+
+    name = models.CharField(max_length=50)
+    description = models.TextField(null=True, blank=True)
+    practise_info = models.TextField(null=True, blank=True)
+    location = models.CharField(max_length=100)
+    price = models.DecimalField(decimal_places=2, max_digits=10, default=0)
+    price_description = models.CharField(max_length=100, null=True, blank=True)
+    seats = models.IntegerField(validators=[positive_number])
+    remaining_seats = models.IntegerField(validators=[positive_number], blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
+    partner = models.ManyToManyField(Partner)
+    # teachers
+
+    class Meta:
+        db_table = 'lesson'
+        verbose_name = 'lesson'
+        verbose_name_plural = 'lessons'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.remaining_seats = self.seats
+        super(Lesson, self).save(*args, **kwargs)
+
+
+class LessonDate(models.Model):
+    date = models.DateTimeField()
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'lesson_date'
+        verbose_name = 'lesson date'
+        verbose_name_plural = 'lesson dates'
+
+
+class UserLesson(models.Model):
+    user = models.ForeignKey(SiteUser, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    know_academy_through = models.CharField(max_length=100, null=True, blank=True)
+    questions = models.CharField(max_length=100, null=True, blank=True)
+    rate = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'user_lesson'
+        verbose_name = 'user lesson'
+        verbose_name_plural = 'user lessons'
+
+    def __str__(self):
+        return '{user}-{lesson}'.format(user=self.user.auth_user.full_name, lesson=self.lesson.name)

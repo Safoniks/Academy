@@ -101,6 +101,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'data/media/')
 USER_PHOTOS_DIR_NAME = 'user-photos'
 PARTNER_LOGOS_DIR_NAME = 'partner-logos'
 CITY_PHOTOS_DIR_NAME = 'city-photos'
+THEME_PHOTOS_DIR_NAME = 'theme-photos'
 
 SERVER_EMAIL = 'root@localhost'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
