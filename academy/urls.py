@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
-    url(r'^admin/', include('academy_admin.urls')),
+    url(r'^'+settings.ADMIN_URL[1:], include('academy_admin.urls')),
     url(r'^', include('academy_site.urls')),
 ]
 

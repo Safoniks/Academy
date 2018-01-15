@@ -36,10 +36,12 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'academy.src.middleware.MyAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = ('academy.src.backend.MyAuthenticationBackend',)
 
 ROOT_URLCONF = 'academy.urls'
 
@@ -92,6 +94,10 @@ SITE_LOGOUT_REDIRECT_URL = 'academy_site:home'
 ADMIN_LOGOUT_REDIRECT_URL = 'academy_admin:login'
 # LOGIN_URL = 'academy_site:signin'
 # LOGIN_REDIRECT_URL = 'academy_site:profile'
+
+ADMIN_URL = '/admin/'
+ADMIN_USER_SESSION_KEY = '_admin_user_id'
+SITE_USER_SESSION_KEY = '_site_user_id'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')

@@ -9,7 +9,7 @@ AuthUser = get_user_model()
 @receiver(post_save, sender=AuthUser)
 def create_site_user(sender, instance, created, **kwargs):
     if created and instance.is_site_user:
-        new_site_user = SiteUser(user=instance)
+        new_site_user = SiteUser(auth_user=instance)
         new_site_user.save()
 
 

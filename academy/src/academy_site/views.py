@@ -1,8 +1,9 @@
-from django.contrib.auth import login, authenticate, get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 from .forms import SignUpForm, SignInForm, ContactUsForm, ProfileForm
+from backend import login, logout
 
 
 from .models import SiteUser
@@ -23,7 +24,8 @@ def signup(request):
             form.save()
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
-            user = authenticate(email=email, password=password)
+            user = authenticate(request, email=email, password=password)
+            print(user)
             login(request, user)
             redirect_to = request.GET.get('next', 'academy_site:home')
             return redirect(redirect_to)
@@ -41,7 +43,7 @@ def signin(request):
         if form.is_valid():
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
-            user = authenticate(email=email, password=password)
+            user = authenticate(request, email=email, password=password)
             if user and user.is_site_user:
                 login(request, user)
                 redirect_to = request.GET.get('next', 'academy_site:home')
