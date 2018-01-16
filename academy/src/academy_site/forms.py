@@ -57,4 +57,4 @@ class ProfileForm(forms.Form):
         auth_user.photo = data.pop('photo')
         auth_user.save()
 
-        SiteUser.objects.filter(user=auth_user).update(**data)
+        SiteUser.objects.filter(auth_user=auth_user).update(**data)

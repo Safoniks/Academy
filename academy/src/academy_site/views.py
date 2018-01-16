@@ -1,9 +1,10 @@
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.conf import settings
 
 from .forms import SignUpForm, SignInForm, ContactUsForm, ProfileForm
 from backend import login, logout
+from decorators import site_user_login_required
 
 
 from .models import SiteUser
@@ -25,9 +26,8 @@ def signup(request):
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
             user = authenticate(request, email=email, password=password)
-            print(user)
             login(request, user)
-            redirect_to = request.GET.get('next', 'academy_site:home')
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
             return redirect(redirect_to)
     else:
         form = SignUpForm()
@@ -46,7 +46,7 @@ def signin(request):
             user = authenticate(request, email=email, password=password)
             if user and user.is_site_user:
                 login(request, user)
-                redirect_to = request.GET.get('next', 'academy_site:home')
+                redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
                 return redirect(redirect_to)
             else:
                 form = SignInForm()
@@ -56,6 +56,11 @@ def signin(request):
         'signin_form': form,
         'user': request.user
     })
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('academy_site:home')
 
 
 def contact_us(request):
@@ -71,7 +76,7 @@ def contact_us(request):
     })
 
 
-@login_required(login_url='academy_site:signin')
+@site_user_login_required(login_url='academy_site:signin')
 def profile(request):
     context = {
         'user': request.user
@@ -79,14 +84,14 @@ def profile(request):
     return render(request, 'academy_site/profile.html', context)
 
 
-@login_required(login_url='academy_site:signin')
+@site_user_login_required(login_url='academy_site:signin')
 def profile_edit(request):
     user = request.user
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES)
         if form.is_valid():
             form.save(user)
-            redirect_to = request.GET.get('next', 'academy_site:profile')
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:profile')
             return redirect(redirect_to)
     else:
         user_profile_data = {

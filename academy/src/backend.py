@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.conf import settings
 AuthUser = get_user_model()
 
@@ -60,12 +61,14 @@ def login(request, user):
     request.session[session_key] = str(user.pk)
     if hasattr(request, 'user'):
         request.user = user
+    user_logged_in.send(sender=user.__class__, request=request, user=user)
 
 
 def logout(request):
     user = getattr(request, 'user', None)
     if hasattr(user, 'is_authenticated') and not user.is_authenticated:
         user = None
+    user_logged_out.send(sender=user.__class__, request=request, user=user)
 
     try:
         del request.session[get_session_key(request)]

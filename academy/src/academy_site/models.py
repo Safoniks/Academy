@@ -79,6 +79,15 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+    def save(self, *args, **kwargs):
+        try:
+            this = self.__class__.objects.get(pk=self.pk)
+            if this.photo != self.photo:
+                this.photo.delete(save=False)
+        except:
+            pass
+        super(self.__class__, self).save(*args, **kwargs)
+
     @property
     def full_name(self):
         return '{first_name} {last_name}'.format(first_name=self.first_name, last_name=self.last_name)
@@ -140,6 +149,15 @@ class Partner(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        try:
+            this = self.__class__.objects.get(pk=self.pk)
+            if this.logo != self.logo:
+                this.logo.delete(save=False)
+        except:
+            pass
+        super(self.__class__, self).save(*args, **kwargs)
+
 
 def get_city_photo_path(*args):
     return get_image_path(*args, dir_name=settings.CITY_PHOTOS_DIR_NAME)
@@ -163,6 +181,15 @@ class City(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        try:
+            this = self.__class__.objects.get(pk=self.pk)
+            if this.photo != self.photo:
+                this.photo.delete(save=False)
+        except:
+            pass
+        super(self.__class__, self).save(*args, **kwargs)
+
 
 def get_theme_photo_path(*args):
     return get_image_path(*args, dir_name=settings.THEME_PHOTOS_DIR_NAME)
@@ -180,6 +207,15 @@ class Theme(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        try:
+            this = self.__class__.objects.get(pk=self.pk)
+            if this.photo != self.photo:
+                this.photo.delete(save=False)
+        except:
+            pass
+        super(self.__class__, self).save(*args, **kwargs)
 
 
 class Lesson(models.Model):

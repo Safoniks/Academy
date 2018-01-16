@@ -90,14 +90,11 @@ USE_L10N = True
 USE_TZ = True
 
 AUTH_USER_MODEL = 'academy_site.AuthUser'
-SITE_LOGOUT_REDIRECT_URL = 'academy_site:home'
-ADMIN_LOGOUT_REDIRECT_URL = 'academy_admin:login'
-# LOGIN_URL = 'academy_site:signin'
-# LOGIN_REDIRECT_URL = 'academy_site:profile'
+REDIRECT_FIELD_NAME = 'next'
 
 ADMIN_URL = '/admin/'
-ADMIN_USER_SESSION_KEY = '_admin_user_id'
-SITE_USER_SESSION_KEY = '_site_user_id'
+ADMIN_USER_SESSION_KEY = 'admin_user_id'
+SITE_USER_SESSION_KEY = 'site_user_id'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')

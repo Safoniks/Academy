@@ -12,5 +12,5 @@ urlpatterns = [
     url(r'^contact_us/$', views.contact_us, name='contact_us'),
     url(r'^profile/$', views.profile, name='profile'),
     url(r'^profile/edit/$', views.profile_edit, name='profile_edit'),
-    url(r'^logout/$', logout, {'next_page': settings.SITE_LOGOUT_REDIRECT_URL}, name='logout'),
+    url(r'^logout/$', views.logout_view, name='logout'),
 ]
