@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
+from django.core.exceptions import ObjectDoesNotExist
 
 from .validators import positive_number
 
@@ -75,9 +76,19 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
         db_table = 'auth_user'
         verbose_name = 'authenticated user'
         verbose_name_plural = 'authenticated users'
+        permissions = (
+            ('some_perm', 'custom permission'),
+        )
 
     def __str__(self):
         return self.email
+
+    def has_perm(self, perm, obj=None):
+        try:
+            user_perm = self.user_permissions.get(codename=perm)
+        except ObjectDoesNotExist:
+            user_perm = False
+        return bool(user_perm)
 
     def save(self, *args, **kwargs):
         try:

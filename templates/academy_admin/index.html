@@ -2,7 +2,7 @@
 <body>
 ADMIN
 {% if user.is_authenticated %}
-<p>Welcome, {{ user.email }}. Thanks for logging in.<a href="{% url 'academy_site:logout' %}">[logout]</a></p>
+<p>Welcome, {{ user.email }}. Thanks for logging in.<a href="{% url 'academy_admin:logout' %}">[logout]</a></p>
 {% else %}
 <p>Welcome, new user. Please log in.</p>
 {% endif %}
