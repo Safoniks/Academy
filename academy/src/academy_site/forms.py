@@ -1,7 +1,9 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 
-from .models import ContactUs, SiteUser
+from .models import SiteUser
 
 AuthUser = get_user_model()
 
@@ -26,10 +28,15 @@ class SignInForm(forms.Form):
     password = forms.CharField(required=True, max_length=20)
 
 
-class ContactUsForm(forms.ModelForm):
-    class Meta:
-        model = ContactUs
-        fields = ('name', 'email', 'message', )
+class ContactUsForm(forms.Form):
+    name = forms.CharField(max_length=20)
+    email = forms.EmailField()
+    message = forms.CharField(widget=forms.Textarea)
+
+    def contact_us(self):
+        data = self.cleaned_data
+        subject = settings.CONTACT_US_SUBJECT.format(name=data['name'])
+        send_mail(subject, data['message'], data['email'], [settings.SITE_SETTINGS['contact_email']])
 
 
 class ProfileForm(forms.Form):

@@ -121,17 +121,6 @@ class SiteUser(models.Model):
         verbose_name_plural = 'site users'
 
 
-class ContactUs(models.Model):
-    name = models.CharField(max_length=20)
-    email = models.EmailField()
-    message = models.TextField(null=True, blank=True)
-
-    class Meta:
-        db_table = 'contact_us'
-        verbose_name = 'contact us'
-        verbose_name_plural = 'contacts us'
-
-
 def get_partner_logo_path(*args):
     return get_image_path(*args, dir_name=settings.PARTNER_LOGOS_DIR_NAME)
 

@@ -109,11 +109,18 @@ THEME_PHOTOS_DIR_NAME = 'theme-photos'
 SERVER_EMAIL = 'root@localhost'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
+CONTACT_US_SUBJECT = 'Contact with {name}'
+
 INITIAL_ADMIN = {
     'email': 'admin@admin.com',
     'password': 'admin',
     'first_name': 'fname',
     'last_name': 'lname',
+}
+
+SITE_SETTINGS = {
+    'contact_phone': '1 800-888-999',
+    'contact_email': 'info@herstelacademie.be',
 }
 
 LOGGING = {

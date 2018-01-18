@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.core.mail import send_mail
 
 from .forms import SignUpForm, SignInForm, ContactUsForm, ProfileForm
 from backend import login, logout
@@ -67,7 +68,7 @@ def contact_us(request):
     if request.method == 'POST':
         form = ContactUsForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.contact_us()
     else:
         form = ContactUsForm()
     return render(request, 'academy_site/home.html', {
