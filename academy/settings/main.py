@@ -110,7 +110,7 @@ SERVER_EMAIL = 'root@localhost'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
 INITIAL_ADMIN = {
-    'email': 'admin@admin',
+    'email': 'admin@admin.com',
     'password': 'admin',
     'first_name': 'fname',
     'last_name': 'lname',

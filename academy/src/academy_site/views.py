@@ -44,7 +44,7 @@ def signin(request):
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
             user = authenticate(request, email=email, password=password)
-            if user and user.is_site_user:
+            if user:
                 login(request, user)
                 redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
                 return redirect(redirect_to)
