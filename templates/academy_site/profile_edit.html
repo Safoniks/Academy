@@ -1,12 +1,11 @@
-<html>
-<body>
+{% extends 'academy_site/base.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
-<h2>EDIT PROFILE</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ edit_form.as_p }}
-    <button type="submit">Save</button>
-</form>
-
-</body>
-</html>
+{% block content %}
+    <h2>EDIT PROFILE</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ edit_form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+{% endblock %}

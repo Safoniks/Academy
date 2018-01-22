@@ -61,6 +61,11 @@ def get_user_photo_path(*args):
 
 
 class AuthUser(AbstractBaseUser, PermissionsMixin):
+    ADMIN = 'Administrator'
+    CITY_ADMIN = 'City Administrator'
+    TEACHER = 'Teacher'
+    SITE_USER = 'Site user'
+
     first_name = models.CharField(max_length=50, null=True, blank=True)
     last_name = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(unique=True)
@@ -119,6 +124,17 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
     @property
     def is_admin(self):
         return self.is_superuser is True
+
+    def get_role(self):
+        roles_dict = {
+            'is_admin': self.ADMIN,
+            'is_city_admin': self.CITY_ADMIN,
+            'is_teacher': self.TEACHER,
+            'is_site_user': self.SITE_USER,
+        }
+        for prop, value in roles_dict.items():
+            if getattr(self, prop, False):
+                return value
 
 
 class SiteUser(models.Model):
