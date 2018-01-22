@@ -36,14 +36,14 @@ class AuthUserManager(BaseUserManager):
             raise ValueError('Admin must have is_superuser=True.')
         return self._create_user(email, password, **extra_fields)
 
-    def create_volunteer(self, email, password, **extra_fields):
+    def create_teacher(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is not True:
-            raise ValueError('Volunteer must have is_staff=True.')
+            raise ValueError('Teacher must have is_staff=True.')
         if extra_fields.get('is_superuser') is True:
-            raise ValueError('Volunteer must have is_superuser=False.')
+            raise ValueError('Teacher must have is_superuser=False.')
         return self._create_user(email, password, **extra_fields)
 
     def create_site_user(self, email, password, **extra_fields):
@@ -69,6 +69,7 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    city = models.ForeignKey('City', on_delete=models.CASCADE, null=True, blank=True)
     USERNAME_FIELD = 'email'
     objects = AuthUserManager()
 
@@ -108,8 +109,12 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
         return hasattr(self, 'site_user') or self.is_staff is False and self.is_superuser is False
 
     @property
-    def is_volunteer(self):
+    def is_teacher(self):
         return self.is_staff is True and self.is_superuser is False
+
+    @property
+    def is_city_admin(self):
+        return self.is_admin and self.city
 
     @property
     def is_admin(self):
@@ -117,19 +122,30 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
 
 
 class SiteUser(models.Model):
-    auth_user = models.OneToOneField(AuthUser, on_delete=models.CASCADE)
+    auth_user = models.OneToOneField('AuthUser', on_delete=models.CASCADE)
     birthdate = models.DateField(null=True, blank=True)
     phone = models.CharField(null=True, blank=True, max_length=20)
     address = models.CharField(null=True, blank=True, max_length=50)
     postcode = models.IntegerField(null=True, blank=True)
-    # country
-    # city
-    # lessons
+    courses = models.ManyToManyField('Course', through='UserCourse')
 
     class Meta:
         db_table = 'site_user'
         verbose_name = 'site user'
         verbose_name_plural = 'site users'
+
+
+class Teacher(models.Model):
+    auth_user = models.OneToOneField('AuthUser', on_delete=models.CASCADE)
+    facebook_link = models.URLField(null=True, blank=True)
+    instagram_link = models.URLField(null=True, blank=True)
+    other_link = models.URLField(null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'teacher'
+        verbose_name = 'teacher'
+        verbose_name_plural = 'teachers'
 
 
 def get_partner_logo_path(*args):
@@ -140,6 +156,7 @@ class Partner(models.Model):
     name = models.CharField(max_length=20)
     link = models.URLField()
     logo = models.ImageField(upload_to=get_partner_logo_path)
+    last_update = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = 'partner'
@@ -171,7 +188,7 @@ class City(models.Model):
     photo = models.ImageField(upload_to=get_city_photo_path, null=True, blank=True)
     school_address = models.CharField(max_length=100)
     last_update = models.DateTimeField(blank=True, null=True)
-    partner = models.ManyToManyField(Partner)
+    partners = models.ManyToManyField('Partner')
 
     class Meta:
         db_table = 'city'
@@ -197,8 +214,10 @@ def get_theme_photo_path(*args):
 
 class Theme(models.Model):
     name = models.CharField(max_length=50)
+    description = models.TextField(null=True, blank=True)
     photo = models.ImageField(upload_to=get_theme_photo_path, null=True, blank=True)
-    city = models.ForeignKey(City, on_delete=models.CASCADE)
+    city = models.ForeignKey('City', on_delete=models.CASCADE)
+    partners = models.ManyToManyField('Partner')
 
     class Meta:
         db_table = 'theme'
@@ -218,7 +237,7 @@ class Theme(models.Model):
         super(self.__class__, self).save(*args, **kwargs)
 
 
-class Lesson(models.Model):
+class Course(models.Model):
     PLANNED = 'planned'
     AVAILABLE = 'available'
     CANCELLED = 'cancelled'
@@ -243,14 +262,14 @@ class Lesson(models.Model):
     remaining_seats = models.IntegerField(validators=[positive_number], blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
 
-    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
-    partner = models.ManyToManyField(Partner)
-    # teachers
+    theme = models.ForeignKey('Theme', on_delete=models.CASCADE)
+    partners = models.ManyToManyField('Partner')
+    teachers = models.ManyToManyField('Teacher')
 
     class Meta:
-        db_table = 'lesson'
-        verbose_name = 'lesson'
-        verbose_name_plural = 'lessons'
+        db_table = 'course'
+        verbose_name = 'course'
+        verbose_name_plural = 'courses'
 
     def __str__(self):
         return self.name
@@ -258,30 +277,30 @@ class Lesson(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.remaining_seats = self.seats
-        super(Lesson, self).save(*args, **kwargs)
+        super(Course, self).save(*args, **kwargs)
 
 
-class LessonDate(models.Model):
+class Lesson(models.Model):
     date = models.DateTimeField()
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'lesson_date'
-        verbose_name = 'lesson date'
-        verbose_name_plural = 'lesson dates'
+        db_table = 'lesson'
+        verbose_name = 'lesson'
+        verbose_name_plural = 'lessons'
 
 
-class UserLesson(models.Model):
-    user = models.ForeignKey(SiteUser, on_delete=models.CASCADE)
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+class UserCourse(models.Model):
+    user = models.ForeignKey('SiteUser', on_delete=models.CASCADE)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)
     know_academy_through = models.CharField(max_length=100, null=True, blank=True)
     questions = models.CharField(max_length=100, null=True, blank=True)
     rate = models.IntegerField(default=0)
 
     class Meta:
-        db_table = 'user_lesson'
-        verbose_name = 'user lesson'
-        verbose_name_plural = 'user lessons'
+        db_table = 'user_course'
+        verbose_name = 'user course'
+        verbose_name_plural = 'user courses'
 
     def __str__(self):
-        return '{user}-{lesson}'.format(user=self.user.auth_user.full_name, lesson=self.lesson.name)
+        return '{user}-{course}'.format(user=self.user.auth_user.full_name, course=self.course.name)

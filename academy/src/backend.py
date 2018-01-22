@@ -16,7 +16,7 @@ class MyAuthenticationBackend:
         else:
             if user.check_password(password):
                 if request.path.startswith(settings.ADMIN_URL):
-                    if user.is_admin or user.is_volunteer:
+                    if user.is_admin or user.is_teacher:
                         return user
                 else:
                     if user.is_site_user:
@@ -44,7 +44,7 @@ def get_user(request):
         return AnonymousUser()
 
     if request.path.startswith(settings.ADMIN_URL):
-        if user.is_admin or user.is_volunteer:
+        if user.is_admin or user.is_teacher:
             return user
     else:
         if user.is_site_user:
