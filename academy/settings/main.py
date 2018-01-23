@@ -97,7 +97,9 @@ ADMIN_USER_SESSION_KEY = 'admin_user_id'
 SITE_USER_SESSION_KEY = 'site_user_id'
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATICFILES_DIRS = (
+  os.path.join(BASE_DIR, 'static/'),
+)
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data/media/')

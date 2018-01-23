@@ -1,0 +1,24 @@
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+<h1><a href="{% url 'academy_admin:index' %}">BACKOFFICE</a></h1>
+<div style="display: flex; justify-content: space-around; align-items: center; background-color: #777777;">
+    <div>
+        <div style="display: inline-block; margin-right: 10px;">
+            {% if user.photo %}
+                <img style="height: 50px; width: 50px;" src="{{ user.photo.url }}" alt="">
+            {% else %}
+                <img style="height: 50px; width: 50px;" src="{{ STATIC_PREFIX }}academy/img/anonymous.png" alt="">
+            {% endif %}
+        </div>
+        <div style="display: inline-block;">
+            <p>{{ user.full_name }}</p>
+            <p>{{ user.get_role }}</p>
+            <p><a href="{% url 'academy_admin:logout' %}">[logout]</a></p>
+        </div>
+    </div>
+    <div><a href="{% url 'academy_admin:index' %}">[+ADD CITY]</a></div>
+    <div><a href="{% url 'academy_admin:index' %}">[+ADD LESSON]</a></div>
+    <div><a href="{% url 'academy_admin:index' %}">[THEMES]</a></div>
+    <div><a href="{% url 'academy_admin:index' %}">[LESSONS]</a></div>
+    <div><a href="{% url 'academy_admin:index' %}">[CALENDAR]</a></div>
+</div>

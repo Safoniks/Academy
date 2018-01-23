@@ -1,0 +1,14 @@
+{% extends 'academy_admin/base.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block content %}
+    {% block header %}{% include 'academy_admin/header.html' %}{% endblock %}
+    <div>
+        <div style="float: left; width: 20%; background-color: #777777; text-align: center;">
+            {% block menu %}{% include 'academy_admin/menu.html' %}{% endblock %}
+        </div
+        ><div style="width: 80%; margin-left: 20%;">
+            {% block subcontent %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}
