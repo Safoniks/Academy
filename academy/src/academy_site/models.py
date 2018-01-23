@@ -172,7 +172,7 @@ class Partner(models.Model):
     name = models.CharField(max_length=20)
     link = models.URLField()
     logo = models.ImageField(upload_to=get_partner_logo_path)
-    last_update = models.DateTimeField(blank=True, null=True)
+    last_update = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'partner'
@@ -203,7 +203,7 @@ class City(models.Model):
     phone = models.CharField(max_length=20)
     photo = models.ImageField(upload_to=get_city_photo_path, null=True, blank=True)
     school_address = models.CharField(max_length=100)
-    last_update = models.DateTimeField(blank=True, null=True)
+    last_update = models.DateTimeField(auto_now_add=True)
     partners = models.ManyToManyField('Partner')
 
     class Meta:

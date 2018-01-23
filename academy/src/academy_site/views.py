@@ -8,13 +8,16 @@ from backend import login, logout
 from decorators import site_user_login_required
 
 
-from .models import SiteUser
+from .models import City
 AuthUser = get_user_model()
 
 
 def home(request):
+    cities = City.objects.all()
+
     context = {
         'user': request.user,
+        'cities': cities,
         'signup_form': SignUpForm(),
         'signin_form': SignInForm(),
         'contact_us_form': ContactUsForm(),

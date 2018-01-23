@@ -3,12 +3,12 @@
 
 {% block content %}
     {% block header %}{% include 'academy_admin/header.html' %}{% endblock %}
-    <div>
+    <div style="margin-top: 20px;">
         <div style="float: left; width: 20%; background-color: #777777; text-align: center;">
             {% block menu %}{% include 'academy_admin/menu.html' %}{% endblock %}
         </div
         ><div style="width: 80%; margin-left: 20%;">
-            {% block subcontent %}{% endblock %}
+            <div style="width: 50%; margin: 0 auto;">{% block subcontent %}{% endblock %}</div>
         </div>
     </div>
 {% endblock %}
