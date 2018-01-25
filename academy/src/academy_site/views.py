@@ -1,7 +1,8 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.shortcuts import render, redirect
 from django.conf import settings
-from django.core.mail import send_mail
+from django.http import HttpResponse, Http404
+from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import SignUpForm, SignInForm, ContactUsForm, ProfileForm
 from backend import login, logout
@@ -36,15 +37,9 @@ def signup(request):
             login(request, user)
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
             return redirect(redirect_to)
+        return HttpResponse('400')
     else:
-        signup_form = SignUpForm()
-    context = {
-        'user': request.user,
-        'signup_form': signup_form,
-        'signin_form': SignInForm(),
-        'contact_us_form': ContactUsForm(),
-    }
-    return render(request, 'academy_site/home.html', context)
+        raise Http404
 
 
 def signin(request):
@@ -58,17 +53,9 @@ def signin(request):
                 login(request, user)
                 redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
                 return redirect(redirect_to)
-            else:
-                signin_form = SignInForm()
+        return HttpResponse('400')
     else:
-        signin_form = SignInForm()
-    context = {
-        'user': request.user,
-        'signup_form': SignUpForm(),
-        'signin_form': signin_form,
-        'contact_us_form': ContactUsForm(),
-    }
-    return render(request, 'academy_site/home.html', context)
+        raise Http404
 
 
 def logout_view(request):
@@ -81,15 +68,11 @@ def contact_us(request):
         contact_us_form = ContactUsForm(request.POST)
         if contact_us_form.is_valid():
             contact_us_form.contact_us()
+            return HttpResponse('200')
+        else:
+            return HttpResponse('400')
     else:
-        contact_us_form = ContactUsForm()
-    context = {
-        'user': request.user,
-        'signup_form': SignUpForm(),
-        'signin_form': SignInForm(),
-        'contact_us_form': contact_us_form,
-    }
-    return render(request, 'academy_site/home.html', context)
+        raise Http404
 
 
 @site_user_login_required(login_url='academy_site:signin')
@@ -126,3 +109,18 @@ def profile_edit(request):
         'edit_form': form,
     }
     return render(request, 'academy_site/profile_edit.html', context)
+
+
+@site_user_login_required(login_url='academy_site:signin')
+def city_detail(request, slug):
+    try:
+        city = City.objects.get(slug=slug)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    context = {
+        'user': request.user,
+        'city': city,
+        'contact_us_form': ContactUsForm(),
+    }
+    return render(request, 'academy_site/city_detail.html', context)

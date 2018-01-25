@@ -2,10 +2,12 @@ import os
 import uuid
 from werkzeug.utils import secure_filename
 
+from django.template.defaultfilters import slugify
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 
 from .validators import positive_number
 
@@ -189,6 +191,7 @@ class Partner(models.Model):
                 this.logo.delete(save=False)
         except:
             pass
+        self.last_update = timezone.now()
         super(self.__class__, self).save(*args, **kwargs)
 
 
@@ -197,7 +200,8 @@ def get_city_photo_path(*args):
 
 
 class City(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(blank=True, unique=True)
     description = models.TextField(null=True, blank=True)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
@@ -215,12 +219,15 @@ class City(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        if not self.id:
+            self.slug = slugify(self.name)
         try:
             this = self.__class__.objects.get(pk=self.pk)
             if this.photo != self.photo:
                 this.photo.delete(save=False)
         except:
             pass
+        self.last_update = timezone.now()
         super(self.__class__, self).save(*args, **kwargs)
 
 

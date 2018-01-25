@@ -1,10 +1,14 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.http import HttpResponse, Http404
+from django.core.exceptions import ObjectDoesNotExist
 
-from .forms import LoginForm, AddCityForm
+from .forms import LoginForm, AddCityForm, UpdateCityForm
 from backend import login, logout
 from decorators import admin_user_login_required, anonymous_user_required
+
+from academy_site.models import City
 
 AuthUser = get_user_model()
 
@@ -49,7 +53,7 @@ def add_city(request):
         add_city_form = AddCityForm(request.POST, request.FILES)
         if add_city_form.is_valid():
             add_city_form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:index')
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
             return redirect(redirect_to)
     else:
         add_city_form = AddCityForm()
@@ -58,3 +62,53 @@ def add_city(request):
         'add_city_form': add_city_form,
     }
     return render(request, 'academy_admin/add_city.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def cities(request):
+    all_cities = City.objects.all()
+    context = {
+        'user': request.user,
+        'cities': all_cities,
+    }
+    return render(request, 'academy_admin/cities.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def city_detail(request, slug):
+    try:
+        city = City.objects.get(slug=slug)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if request.method == 'POST':
+        form = UpdateCityForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(city)
+    else:
+        city_data = {
+            'description': city.description,
+            'school_address': city.school_address,
+            'email': city.email,
+            'phone': city.phone,
+            'photo': city.photo,
+        }
+        form = UpdateCityForm(initial=city_data)
+    context = {
+        'user': request.user,
+        'city': city,
+        'update_city_form': form,
+    }
+    return render(request, 'academy_admin/city_detail.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def delete_city(request, slug):
+    try:
+        city = City.objects.get(slug=slug)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    city.delete()
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
+    return redirect(redirect_to)

@@ -1,0 +1,23 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <h2>Cities</h2>
+
+    <table>
+        <tr>
+            <th>CITY</th>
+            <th>LAST UPDATE</th>
+        </tr>
+        {% for city in cities %}
+            <tr>
+                <td><a href="{% url 'academy_admin:city_detail' city.slug %}">{{ city.name }}</a></td>
+                <td>{{ city.last_update }}</td>
+                <td><a href="{% url 'academy_admin:index' %}">[+ Add lesson]</a></td>
+                <td><a href="{% url 'academy_admin:index' %}">[+ Add theme]</a></td>
+                <td><a href="{% url 'academy_admin:index' %}">[Edit]</a></td>
+                <td><a href="{% url 'academy_admin:delete_city' city.slug %}">[Delete]</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

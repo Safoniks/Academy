@@ -13,4 +13,5 @@ urlpatterns = [
     url(r'^profile/$', views.profile, name='profile'),
     url(r'^profile/edit/$', views.profile_edit, name='profile_edit'),
     url(r'^logout/$', views.logout_view, name='logout'),
+    url(r'^(?P<slug>[\w-]+)/$', views.city_detail, name='city_detail'),
 ]

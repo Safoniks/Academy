@@ -40,14 +40,14 @@ class ContactUsForm(forms.Form):
 
 
 class ProfileForm(forms.Form):
-    first_name = forms.CharField()
-    last_name = forms.CharField()
-    birthdate = forms.DateField()
+    first_name = forms.CharField(required=False)
+    last_name = forms.CharField(required=False)
+    birthdate = forms.DateField(required=False)
     email = forms.EmailField()
-    phone = forms.CharField()
-    address = forms.CharField()
-    postcode = forms.IntegerField()
-    photo = forms.ImageField()
+    phone = forms.CharField(required=False)
+    address = forms.CharField(required=False)
+    postcode = forms.IntegerField(required=False)
+    photo = forms.ImageField(required=False)
 
     # def clean(self):
     #     form_data = self.cleaned_data

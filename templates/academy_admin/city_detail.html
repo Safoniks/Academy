@@ -1,0 +1,12 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <h2>{{ city.name }}</h2>
+
+    <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:city_detail' city.slug %}">
+        {% csrf_token %}
+        {{ update_city_form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+{% endblock %}

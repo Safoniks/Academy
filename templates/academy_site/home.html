@@ -8,7 +8,7 @@
             {% for city in cities %}
                 <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;
                         background: url({{ city.photo.url }}); background-size: cover;">
-                <a href="{% url 'academy_site:home' %}" style="color: white">
+                <a href="{% url 'academy_site:city_detail' city.slug %}" style="color: white">
                     <p>name: {{ city.name }}</p>
                     <p>description: {{ city.description }}</p>
                     <p>phone: {{ city.phone }}</p>
