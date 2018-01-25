@@ -4,11 +4,11 @@ from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.core.exceptions import ObjectDoesNotExist
 
-from .forms import LoginForm, AddCityForm, UpdateCityForm
+from .forms import LoginForm, AddCityForm, UpdateCityForm, PartnerForm
 from backend import login, logout
 from decorators import admin_user_login_required, anonymous_user_required
 
-from academy_site.models import City
+from academy_site.models import City, Partner
 
 AuthUser = get_user_model()
 
@@ -111,4 +111,70 @@ def delete_city(request, slug):
 
     city.delete()
     redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
+    return redirect(redirect_to)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def partners(request):
+    all_partners = Partner.objects.all()
+    context = {
+        'user': request.user,
+        'partners': all_partners,
+    }
+    return render(request, 'academy_admin/partners.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def add_partner(request):
+    if request.method == 'POST':
+        form = PartnerForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
+            return redirect(redirect_to)
+    else:
+        form = PartnerForm()
+    context = {
+        'user': request.user,
+        'add_partner_form': form,
+    }
+    return render(request, 'academy_admin/add_partner.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def partner_detail(request, pk):
+    try:
+        partner = Partner.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if request.method == 'POST':
+        form = PartnerForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(partner)
+    else:
+        partner_data = {
+            'name': partner.name,
+            'link': partner.link,
+            'logo': partner.logo,
+            'cities': partner.city_set.all(),
+        }
+        form = PartnerForm(initial=partner_data)
+    context = {
+        'user': request.user,
+        'partner': partner,
+        'update_partner_form': form,
+    }
+    return render(request, 'academy_admin/partner_detail.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def delete_partner(request, pk):
+    try:
+        partner = Partner.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    partner.delete()
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
     return redirect(redirect_to)

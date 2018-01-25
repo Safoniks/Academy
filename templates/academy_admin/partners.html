@@ -1,0 +1,21 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <h2>Partners</h2>
+
+    <table style="margin-bottom: 50px;">
+        <tr>
+            <th>PARTNER</th>
+        </tr>
+        {% for partner in partners %}
+            <tr>
+                <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">{{ partner.name }}</a></td>
+                <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">[Edit]</a></td>
+                <td><a href="{% url 'academy_admin:delete_partner' partner.pk %}">[Delete]</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="{% url 'academy_admin:add_partner' %}">[+ADD PARTNER]</a>
+{% endblock %}

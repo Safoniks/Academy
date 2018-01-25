@@ -1,5 +1,5 @@
 from django import forms
-from academy_site.models import City
+from academy_site.models import City, Partner
 
 
 class LoginForm(forms.Form):
@@ -35,3 +35,21 @@ class UpdateCityForm(forms.Form):
         city.phone = data['phone']
         city.photo = data['photo']
         city.save()
+
+
+class PartnerForm(forms.Form):
+    name = forms.CharField()
+    link = forms.URLField()
+    logo = forms.ImageField()
+    cities = forms.ModelMultipleChoiceField(
+        queryset=City.objects.all(), widget=forms.CheckboxSelectMultiple, required=False
+    )
+
+    def save(self, partner=None):
+        data = self.cleaned_data
+        cities = data.pop('cities', [])
+        if not partner:
+            partner = Partner(**data)
+            partner.save()
+        partner.city_set.clear()
+        partner.city_set.add(*cities)
