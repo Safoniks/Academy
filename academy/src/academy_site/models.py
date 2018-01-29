@@ -57,6 +57,18 @@ class AuthUserManager(BaseUserManager):
             raise ValueError('Site user must have is_superuser=False.')
         return self._create_user(email, password, **extra_fields)
 
+    def admins(self, city=None):
+        admin_queryset = self.filter(is_staff=True, is_superuser=True, is_active=True)
+        return admin_queryset.filter(city=city) if city else admin_queryset
+
+    def teachers(self, city=None):
+        teacher_queryset = self.filter(is_staff=True, is_superuser=False, is_active=True)
+        return teacher_queryset.filter(city=city) if city else teacher_queryset
+
+    def site_users(self, city=None):
+        site_user_queryset = self.filter(is_staff=False, is_superuser=False, is_active=True)
+        return site_user_queryset.filter(city=city) if city else site_user_queryset
+
 
 def get_user_photo_path(*args):
     return get_image_path(*args, dir_name=settings.USER_PHOTOS_DIR_NAME)
@@ -164,11 +176,16 @@ class Teacher(models.Model):
     instagram_link = models.URLField(null=True, blank=True)
     other_link = models.URLField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
+    last_update = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'teacher'
         verbose_name = 'teacher'
         verbose_name_plural = 'teachers'
+
+    def save(self, *args, **kwargs):
+        self.last_update = timezone.now()
+        super(self.__class__, self).save(*args, **kwargs)
 
 
 def get_partner_logo_path(*args):

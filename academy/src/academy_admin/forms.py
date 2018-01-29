@@ -1,5 +1,8 @@
 from django import forms
-from academy_site.models import City, Partner
+from django.contrib.auth import get_user_model
+from academy_site.models import City, Partner, Teacher
+
+AuthUser = get_user_model()
 
 
 class LoginForm(forms.Form):
@@ -58,3 +61,25 @@ class PartnerForm(forms.Form):
 
         partner.city_set.clear()
         partner.city_set.add(*cities)
+
+
+class TeacherForm(forms.Form):
+    email = forms.EmailField()
+    password = forms.CharField()
+    photo = forms.ImageField()
+    city = forms.ModelChoiceField(queryset=City.objects.all())
+    facebook_link = forms.URLField(required=False)
+    instagram_link = forms.URLField(required=False)
+    other_link = forms.URLField(required=False)
+    bio = forms.CharField(required=False, widget=forms.Textarea)
+
+    def save(self, partner=None):
+        data = self.cleaned_data
+        auth_data = {
+            'email': data.pop('email'),
+            'password': data.pop('password'),
+            'photo': data.pop('photo'),
+            'city': data.pop('city'),
+        }
+        auth_teacher = AuthUser.objects.create_teacher(**auth_data)
+        Teacher.objects.filter(auth_user=auth_teacher).update(**data)

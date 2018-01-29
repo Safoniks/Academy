@@ -10,22 +10,45 @@
         <button type="submit">Save</button>
     </form>
 
-    <h3>Partners</h3>
+    <div>
+        <h3>Partners</h3>
 
-    <table style="margin-bottom: 30px;">
-        <tr>
-            <th>NAME</th>
-            <th>LAST UPDATE</th>
-        </tr>
-        {% for partner in city.partners.all %}
+        <table style="margin-bottom: 30px;">
             <tr>
-                <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">{{ partner.name }}</a></td>
-                <td>{{ partner.last_update }}</td>
-                <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">[Edit]</a></td>
-                <td><a href="{% url 'academy_admin:delete_partner' partner.pk %}">[Delete]</a></td>
+                <th>NAME</th>
+                <th>LAST UPDATE</th>
             </tr>
-        {% endfor %}
-    </table>
+            {% for partner in city.partners.all %}
+                <tr>
+                    <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">{{ partner.name }}</a></td>
+                    <td>{{ partner.last_update }}</td>
+                    <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">[Edit]</a></td>
+                    <td><a href="{% url 'academy_admin:delete_partner' partner.pk %}">[Delete]</a></td>
+                </tr>
+            {% endfor %}
+        </table>
 
-    <a href="{% url 'academy_admin:add_partner' %}">[+ADD PARTNER]</a>
+        <a href="{% url 'academy_admin:add_partner' %}">[+ADD PARTNER]</a>
+    </div>
+
+    <div>
+        <h3>Teachers</h3>
+
+        <table style="margin-bottom: 30px;">
+            <tr>
+                <th>EMAIL</th>
+                <th>LAST UPDATE</th>
+            </tr>
+            {% for auth_teacher in teachers %}
+                <tr>
+                    <td><a href="{% url 'academy_admin:teacher_detail' auth_teacher.teacher.pk %}">{{ auth_teacher.email }}</a></td>
+                    <td>{{ auth_teacher.teacher.last_update }}</td>
+                    <td><a href="{% url 'academy_admin:teacher_detail' auth_teacher.teacher.pk %}">[Edit]</a></td>
+                    <td><a href="{% url 'academy_admin:delete_teacher' auth_teacher.teacher.pk %}">[Delete]</a></td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <a href="{% url 'academy_admin:add_teacher' %}">[+ADD TEACHER]</a>
+    </div>
 {% endblock %}

@@ -13,6 +13,9 @@ urlpatterns = [
     url(r'^partners/add/$', views.add_partner, name='add_partner'),
     url(r'^partners/(?P<pk>\d+)/$', views.partner_detail, name='partner_detail'),
     url(r'^partners/(?P<pk>\d+)/delete/$', views.delete_partner, name='delete_partner'),
+    url(r'^teachers/add/$', views.add_teacher, name='add_teacher'),
+    url(r'^teachers/(?P<pk>\d+)/$', views.teacher_detail, name='teacher_detail'),
+    url(r'^teachers/(?P<pk>\d+)/delete/$', views.delete_teacher, name='delete_teacher'),
     url(r'^login/$', views.login_view, name='login'),
     url(r'^logout/$', views.logout_view, name='logout'),
 ]

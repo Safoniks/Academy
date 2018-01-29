@@ -4,11 +4,11 @@ from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.core.exceptions import ObjectDoesNotExist
 
-from .forms import LoginForm, AddCityForm, UpdateCityForm, PartnerForm
+from .forms import LoginForm, AddCityForm, UpdateCityForm, PartnerForm, TeacherForm
 from backend import login, logout
 from decorators import admin_user_login_required, anonymous_user_required
 
-from academy_site.models import City, Partner
+from academy_site.models import City, Partner, Teacher
 
 AuthUser = get_user_model()
 
@@ -97,6 +97,7 @@ def city_detail(request, slug):
     context = {
         'user': request.user,
         'city': city,
+        'teachers': AuthUser.objects.teachers(city=city),
         'update_city_form': form,
     }
     return render(request, 'academy_admin/city_detail.html', context)
@@ -177,4 +178,55 @@ def delete_partner(request, pk):
 
     partner.delete()
     redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
+    return redirect(redirect_to)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def add_teacher(request):
+    if request.method == 'POST':
+        form = TeacherForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
+            return redirect(redirect_to)
+    else:
+        form = TeacherForm()
+    context = {
+        'user': request.user,
+        'add_teacher_form': form,
+    }
+    return render(request, 'academy_admin/add_teacher.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def teacher_detail(request, pk):
+    try:
+        teacher = Teacher.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if request.method == 'POST':
+        form = TeacherForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(teacher)
+    else:
+        teacher_data = {}
+        form = TeacherForm(initial=teacher_data)
+    context = {
+        'user': request.user,
+        'teacher': teacher,
+        'update_teacher_form': form,
+    }
+    return render(request, 'academy_admin/teacher_detail.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def delete_teacher(request, pk):
+    try:
+        teacher = Teacher.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    teacher.auth_user.delete()
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
     return redirect(redirect_to)
