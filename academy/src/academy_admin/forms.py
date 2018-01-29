@@ -48,8 +48,13 @@ class PartnerForm(forms.Form):
     def save(self, partner=None):
         data = self.cleaned_data
         cities = data.pop('cities', [])
-        if not partner:
+        if partner:
+            partner.name = data['name']
+            partner.link = data['link']
+            partner.logo = data['logo']
+        else:
             partner = Partner(**data)
-            partner.save()
+        partner.save()
+
         partner.city_set.clear()
         partner.city_set.add(*cities)

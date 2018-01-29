@@ -107,6 +107,11 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
             pass
         super(self.__class__, self).save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        ret = super(self.__class__, self).delete(*args, **kwargs)
+        self.photo.delete(save=False)
+        return ret
+
     @property
     def full_name(self):
         return '{first_name} {last_name}'.format(first_name=self.first_name, last_name=self.last_name)
@@ -194,6 +199,11 @@ class Partner(models.Model):
         self.last_update = timezone.now()
         super(self.__class__, self).save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        ret = super(self.__class__, self).delete(*args, **kwargs)
+        self.logo.delete(save=False)
+        return ret
+
 
 def get_city_photo_path(*args):
     return get_image_path(*args, dir_name=settings.CITY_PHOTOS_DIR_NAME)
@@ -229,6 +239,11 @@ class City(models.Model):
             pass
         self.last_update = timezone.now()
         super(self.__class__, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        ret = super(self.__class__, self).delete(*args, **kwargs)
+        self.photo.delete(save=False)
+        return ret
 
 
 def get_theme_photo_path(*args):
