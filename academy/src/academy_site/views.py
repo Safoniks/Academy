@@ -75,7 +75,7 @@ def contact_us(request):
         raise Http404
 
 
-@site_user_login_required(login_url='academy_site:signin')
+@site_user_login_required(login_url='academy_site:home')
 def profile(request):
     context = {
         'user': request.user
@@ -83,7 +83,7 @@ def profile(request):
     return render(request, 'academy_site/profile.html', context)
 
 
-@site_user_login_required(login_url='academy_site:signin')
+@site_user_login_required(login_url='academy_site:home')
 def profile_edit(request):
     user = request.user
     if request.method == 'POST':
@@ -111,7 +111,7 @@ def profile_edit(request):
     return render(request, 'academy_site/profile_edit.html', context)
 
 
-@site_user_login_required(login_url='academy_site:signin')
+@site_user_login_required(login_url='academy_site:home')
 def city_detail(request, slug):
     try:
         city = City.objects.get(slug=slug)
@@ -121,6 +121,7 @@ def city_detail(request, slug):
     context = {
         'user': request.user,
         'city': city,
+        'teachers': AuthUser.objects.teachers(city=city),
         'contact_us_form': ContactUsForm(),
     }
     return render(request, 'academy_site/city_detail.html', context)

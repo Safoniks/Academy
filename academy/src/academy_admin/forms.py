@@ -63,7 +63,7 @@ class PartnerForm(forms.Form):
         partner.city_set.add(*cities)
 
 
-class TeacherForm(forms.Form):
+class AddTeacherForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField()
     photo = forms.ImageField()
@@ -73,7 +73,7 @@ class TeacherForm(forms.Form):
     other_link = forms.URLField(required=False)
     bio = forms.CharField(required=False, widget=forms.Textarea)
 
-    def save(self, partner=None):
+    def save(self):
         data = self.cleaned_data
         auth_data = {
             'email': data.pop('email'),
@@ -83,3 +83,18 @@ class TeacherForm(forms.Form):
         }
         auth_teacher = AuthUser.objects.create_teacher(**auth_data)
         Teacher.objects.filter(auth_user=auth_teacher).update(**data)
+
+
+class UpdateTeacherForm(forms.Form):
+    photo = forms.ImageField()
+    facebook_link = forms.URLField(required=False)
+    instagram_link = forms.URLField(required=False)
+    other_link = forms.URLField(required=False)
+    bio = forms.CharField(required=False, widget=forms.Textarea)
+
+    def save(self, teacher):
+        data = self.cleaned_data
+        photo = data.pop('photo')
+        teacher.auth_user.photo = photo
+        teacher.auth_user.save()
+        Teacher.objects.filter(pk=teacher.pk).update(**data)

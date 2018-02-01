@@ -4,7 +4,14 @@ from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.core.exceptions import ObjectDoesNotExist
 
-from .forms import LoginForm, AddCityForm, UpdateCityForm, PartnerForm, TeacherForm
+from .forms import (
+    LoginForm,
+    AddCityForm,
+    UpdateCityForm,
+    PartnerForm,
+    AddTeacherForm,
+    UpdateTeacherForm,
+)
 from backend import login, logout
 from decorators import admin_user_login_required, anonymous_user_required
 
@@ -184,13 +191,13 @@ def delete_partner(request, pk):
 @admin_user_login_required(login_url='academy_admin:login')
 def add_teacher(request):
     if request.method == 'POST':
-        form = TeacherForm(request.POST, request.FILES)
+        form = AddTeacherForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
             return redirect(redirect_to)
     else:
-        form = TeacherForm()
+        form = AddTeacherForm()
     context = {
         'user': request.user,
         'add_teacher_form': form,
@@ -206,12 +213,18 @@ def teacher_detail(request, pk):
         raise Http404
 
     if request.method == 'POST':
-        form = TeacherForm(request.POST, request.FILES)
+        form = UpdateTeacherForm(request.POST, request.FILES)
         if form.is_valid():
             form.save(teacher)
     else:
-        teacher_data = {}
-        form = TeacherForm(initial=teacher_data)
+        teacher_data = {
+            'photo': teacher.auth_user.photo,
+            'facebook_link': teacher.facebook_link,
+            'instagram_link': teacher.instagram_link,
+            'other_link': teacher.other_link,
+            'bio': teacher.bio,
+        }
+        form = UpdateTeacherForm(initial=teacher_data)
     context = {
         'user': request.user,
         'teacher': teacher,
