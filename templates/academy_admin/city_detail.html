@@ -4,11 +4,32 @@
 {% block subcontent %}
     <h2>{{ city.name }}</h2>
 
-    <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:city_detail' city.slug %}">
+    <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:city_detail' city.pk %}">
         {% csrf_token %}
         {{ update_city_form.as_p }}
         <button type="submit">Save</button>
     </form>
+
+    <div>
+        <h3>Themes</h3>
+
+        <table style="margin-bottom: 30px;">
+            <tr>
+                <th>NAME</th>
+                <th>LAST UPDATE</th>
+            </tr>
+            {% for theme in city.theme_set.all %}
+                <tr>
+                    <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">{{ theme.name }}</a></td>
+                    <td>{{ theme.last_update }}</td>
+                    <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">[Edit]</a></td>
+                    <td><a href="{% url 'academy_admin:delete_theme' theme.pk %}">[Delete]</a></td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <a href="{% url 'academy_admin:add_theme' %}">[+ADD THEME]</a>
+    </div>
 
     <div>
         <h3>Partners</h3>
@@ -41,7 +62,9 @@
             </tr>
             {% for auth_teacher in teachers %}
                 <tr>
-                    <td><a href="{% url 'academy_admin:teacher_detail' auth_teacher.teacher.pk %}">{{ auth_teacher.email }}</a></td>
+                    <td>
+                        <a href="{% url 'academy_admin:teacher_detail' auth_teacher.teacher.pk %}">{{ auth_teacher.email }}</a>
+                    </td>
                     <td>{{ auth_teacher.teacher.last_update }}</td>
                     <td><a href="{% url 'academy_admin:teacher_detail' auth_teacher.teacher.pk %}">[Edit]</a></td>
                     <td><a href="{% url 'academy_admin:delete_teacher' auth_teacher.teacher.pk %}">[Delete]</a></td>

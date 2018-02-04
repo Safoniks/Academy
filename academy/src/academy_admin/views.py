@@ -11,11 +11,12 @@ from .forms import (
     PartnerForm,
     AddTeacherForm,
     UpdateTeacherForm,
+    ThemeForm,
 )
 from backend import login, logout
 from decorators import admin_user_login_required, anonymous_user_required
 
-from academy_site.models import City, Partner, Teacher
+from academy_site.models import City, Partner, Teacher, Theme
 
 AuthUser = get_user_model()
 
@@ -82,9 +83,9 @@ def cities(request):
 
 
 @admin_user_login_required(login_url='academy_admin:login')
-def city_detail(request, slug):
+def city_detail(request, pk):
     try:
-        city = City.objects.get(slug=slug)
+        city = City.objects.get(pk=pk)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -111,9 +112,9 @@ def city_detail(request, slug):
 
 
 @admin_user_login_required(login_url='academy_admin:login')
-def delete_city(request, slug):
+def delete_city(request, pk):
     try:
-        city = City.objects.get(slug=slug)
+        city = City.objects.get(pk=pk)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -160,6 +161,8 @@ def partner_detail(request, pk):
         form = PartnerForm(request.POST, request.FILES)
         if form.is_valid():
             form.save(partner)
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
+            return redirect(redirect_to)
     else:
         partner_data = {
             'name': partner.name,
@@ -216,6 +219,8 @@ def teacher_detail(request, pk):
         form = UpdateTeacherForm(request.POST, request.FILES)
         if form.is_valid():
             form.save(teacher)
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
+            return redirect(redirect_to)
     else:
         teacher_data = {
             'photo': teacher.auth_user.photo,
@@ -242,4 +247,85 @@ def delete_teacher(request, pk):
 
     teacher.auth_user.delete()
     redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
+    return redirect(redirect_to)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def themes(request):
+    selected_city_slug = request.GET.get('city', None)
+
+    all_cities = City.objects.all()
+    try:
+        if selected_city_slug:
+            selected_city = all_cities.get(slug=selected_city_slug)
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist:
+        selected_city = all_cities.first()
+
+    city_themes = Theme.objects.filter(city=selected_city)
+    context = {
+        'user': request.user,
+        'themes': city_themes,
+        'cities': all_cities,
+        'selected_city': selected_city,
+    }
+    return render(request, 'academy_admin/themes.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def add_theme(request):
+    if request.method == 'POST':
+        form = ThemeForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
+            return redirect(redirect_to)
+    else:
+        form = ThemeForm()
+    context = {
+        'user': request.user,
+        'add_theme_form': form,
+    }
+    return render(request, 'academy_admin/add_theme.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def theme_detail(request, pk):
+    try:
+        theme = Theme.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if request.method == 'POST':
+        form = ThemeForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(theme)
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
+            return redirect(redirect_to)
+    else:
+        theme_data = {
+            'name': theme.name,
+            'description': theme.description,
+            'photo': theme.photo,
+            'city': theme.city,
+        }
+        form = ThemeForm(initial=theme_data)
+    context = {
+        'user': request.user,
+        'theme': theme,
+        'update_theme_form': form,
+    }
+    return render(request, 'academy_admin/theme_detail.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def delete_theme(request, pk):
+    try:
+        theme = Theme.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    theme.delete()
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
     return redirect(redirect_to)

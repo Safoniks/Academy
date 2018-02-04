@@ -269,9 +269,11 @@ def get_theme_photo_path(*args):
 
 class Theme(models.Model):
     name = models.CharField(max_length=50)
+    slug = models.SlugField(blank=True, unique=True)
     description = models.TextField(null=True, blank=True)
     photo = models.ImageField(upload_to=get_theme_photo_path, null=True, blank=True)
     city = models.ForeignKey('City', on_delete=models.CASCADE)
+    last_update = models.DateTimeField(auto_now_add=True)
     partners = models.ManyToManyField('Partner')
 
     class Meta:
@@ -283,13 +285,20 @@ class Theme(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
         try:
             this = self.__class__.objects.get(pk=self.pk)
             if this.photo != self.photo:
                 this.photo.delete(save=False)
         except:
             pass
+        self.last_update = timezone.now()
         super(self.__class__, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        ret = super(self.__class__, self).delete(*args, **kwargs)
+        self.photo.delete(save=False)
+        return ret
 
 
 class Course(models.Model):

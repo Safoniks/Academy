@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from academy_site.models import City, Partner, Teacher
+from academy_site.models import City, Partner, Teacher, Theme
 
 AuthUser = get_user_model()
 
@@ -98,3 +98,21 @@ class UpdateTeacherForm(forms.Form):
         teacher.auth_user.photo = photo
         teacher.auth_user.save()
         Teacher.objects.filter(pk=teacher.pk).update(**data)
+
+
+class ThemeForm(forms.Form):
+    name = forms.CharField()
+    description = forms.CharField(required=False, widget=forms.Textarea)
+    photo = forms.ImageField()
+    city = forms.ModelChoiceField(queryset=City.objects.all())
+
+    def save(self, theme=None):
+        data = self.cleaned_data
+        if theme:
+            theme.name = data['name']
+            theme.description = data['description']
+            theme.photo = data['photo']
+            theme.city = data['city']
+        else:
+            theme = Theme(**data)
+        theme.save()

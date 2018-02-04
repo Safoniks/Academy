@@ -1,0 +1,10 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:theme_detail' theme.pk %}">
+        {% csrf_token %}
+        {{ update_theme_form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+{% endblock %}

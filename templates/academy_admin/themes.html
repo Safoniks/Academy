@@ -1,0 +1,31 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <h2>Themes</h2>
+
+    <div>CITY</div>
+    <select onchange="location = this.value;">
+        {% for city in cities %}
+            <option value="{% url 'academy_admin:themes' %}?city={{ city.slug }}"
+            {% if city == selected_city %}selected{% endif %}>{{ city.name }}</option>
+        {% endfor %}
+    </select>
+
+    <table style="margin: 50px 0;">
+        <tr>
+            <th>NAME</th>
+            <th>LAST UPDATE</th>
+        </tr>
+        {% for theme in themes %}
+            <tr>
+                <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">{{ theme.name }}</a></td>
+                <td>{{ theme.last_update }}</td>
+                <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">[Edit]</a></td>
+                <td><a href="{% url 'academy_admin:delete_theme' theme.pk %}">[Delete]</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="{% url 'academy_admin:add_theme' %}">[+ADD THEME]</a>
+{% endblock %}

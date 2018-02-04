@@ -11,12 +11,12 @@
         </tr>
         {% for city in cities %}
             <tr>
-                <td><a href="{% url 'academy_admin:city_detail' city.slug %}">{{ city.name }}</a></td>
+                <td><a href="{% url 'academy_admin:city_detail' city.pk %}">{{ city.name }}</a></td>
                 <td>{{ city.last_update }}</td>
                 <td><a href="{% url 'academy_admin:index' %}">[+ Add lesson]</a></td>
                 <td><a href="{% url 'academy_admin:index' %}">[+ Add theme]</a></td>
                 <td><a href="{% url 'academy_admin:index' %}">[Edit]</a></td>
-                <td><a href="{% url 'academy_admin:delete_city' city.slug %}">[Delete]</a></td>
+                <td><a href="{% url 'academy_admin:delete_city' city.pk %}">[Delete]</a></td>
             </tr>
         {% endfor %}
     </table>
