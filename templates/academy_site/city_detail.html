@@ -15,7 +15,7 @@
             {% for theme in city.theme_set.all %}
                 <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;
                         background: url({{ theme.photo.url }}) center; background-size: cover;">
-                    <a href="{% url 'academy_site:city_detail' city.slug %}" style="color: white">
+                    <a href="{% url 'academy_site:theme_detail' city_slug=city.slug theme_slug=theme.slug %}" style="color: white">
                         <p>name: {{ theme.name }}</p>
                         <p>description: {{ theme.description }}</p>
                     </a>

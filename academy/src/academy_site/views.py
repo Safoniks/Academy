@@ -9,7 +9,7 @@ from backend import login, logout
 from decorators import site_user_login_required
 
 
-from .models import City
+from .models import City, Theme
 AuthUser = get_user_model()
 
 
@@ -112,9 +112,9 @@ def profile_edit(request):
 
 
 @site_user_login_required(login_url='academy_site:home')
-def city_detail(request, slug):
+def city_detail(request, city_slug):
     try:
-        city = City.objects.get(slug=slug)
+        city = City.objects.get(slug=city_slug)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -125,3 +125,17 @@ def city_detail(request, slug):
         'contact_us_form': ContactUsForm(),
     }
     return render(request, 'academy_site/city_detail.html', context)
+
+
+@site_user_login_required(login_url='academy_site:home')
+def theme_detail(request, city_slug, theme_slug):
+    try:
+        theme = Theme.objects.get(city__slug=city_slug, slug=theme_slug)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    context = {
+        'user': request.user,
+        'theme': theme,
+    }
+    return render(request, 'academy_site/theme_detail.html', context)

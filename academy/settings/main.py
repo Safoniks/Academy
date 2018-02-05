@@ -107,6 +107,7 @@ USER_PHOTOS_DIR_NAME = 'user-photos'
 PARTNER_LOGOS_DIR_NAME = 'partner-logos'
 CITY_PHOTOS_DIR_NAME = 'city-photos'
 THEME_PHOTOS_DIR_NAME = 'theme-photos'
+COURSE_PHOTOS_DIR_NAME = 'course-photos'
 
 SERVER_EMAIL = 'root@localhost'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'

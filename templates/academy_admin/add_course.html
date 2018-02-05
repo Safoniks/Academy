@@ -1,0 +1,20 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <h2>Add course</h2>
+
+    <div>CITY</div>
+    <select onchange="location = this.value;">
+        {% for city in cities %}
+            <option value="{% url 'academy_admin:add_course' %}?city={{ city.slug }}"
+            {% if city == selected_city %}selected{% endif %}>{{ city.name }}</option>
+        {% endfor %}
+    </select>
+
+    <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:add_course' %}">
+        {% csrf_token %}
+        {{ add_course_form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+{% endblock %}

@@ -20,6 +20,9 @@ urlpatterns = [
     url(r'^themes/add/$', views.add_theme, name='add_theme'),
     url(r'^themes/(?P<pk>\d+)/$', views.theme_detail, name='theme_detail'),
     url(r'^themes/(?P<pk>\d+)/delete/$', views.delete_theme, name='delete_theme'),
+    url(r'^courses/$', views.courses, name='courses'),
+    url(r'^courses/add/$', views.add_course, name='add_course'),
+    url(r'^courses/(?P<pk>\d+)/delete/$', views.delete_course, name='delete_course'),
     url(r'^login/$', views.login_view, name='login'),
     url(r'^logout/$', views.logout_view, name='logout'),
 ]

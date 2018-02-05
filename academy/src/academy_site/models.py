@@ -10,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
 from .validators import positive_number
+from .coices import *
 
 
 def get_image_path(instance, filename, dir_name):
@@ -269,7 +270,7 @@ def get_theme_photo_path(*args):
 
 class Theme(models.Model):
     name = models.CharField(max_length=50)
-    slug = models.SlugField(blank=True, unique=True)
+    slug = models.SlugField(blank=True)
     description = models.TextField(null=True, blank=True)
     photo = models.ImageField(upload_to=get_theme_photo_path, null=True, blank=True)
     city = models.ForeignKey('City', on_delete=models.CASCADE)
@@ -280,12 +281,14 @@ class Theme(models.Model):
         db_table = 'theme'
         verbose_name = 'theme'
         verbose_name_plural = 'themes'
+        unique_together = (('city', 'slug',), ('city', 'name',))
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
+        if not self.id:
+            self.slug = slugify(self.name)
         try:
             this = self.__class__.objects.get(pk=self.pk)
             if this.photo != self.photo:
@@ -301,25 +304,16 @@ class Theme(models.Model):
         return ret
 
 
+def get_course_photo_path(*args):
+    return get_image_path(*args, dir_name=settings.COURSE_PHOTOS_DIR_NAME)
+
+
 class Course(models.Model):
-    PLANNED = 'planned'
-    AVAILABLE = 'available'
-    CANCELLED = 'cancelled'
-    SOLD_OUT = 'sold-out'
-    ARCHIVED = 'archived'
-
-    STATUS_CHOICES = (
-        (PLANNED, PLANNED),
-        (AVAILABLE, AVAILABLE),
-        (CANCELLED, CANCELLED),
-        (SOLD_OUT, SOLD_OUT),
-        (ARCHIVED, ARCHIVED),
-    )
-
     name = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
     practise_info = models.TextField(null=True, blank=True)
     location = models.CharField(max_length=100)
+    photo = models.ImageField(upload_to=get_course_photo_path, null=True, blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=10, default=0)
     price_description = models.CharField(max_length=100, null=True, blank=True)
     seats = models.IntegerField(validators=[positive_number])
@@ -341,7 +335,18 @@ class Course(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.remaining_seats = self.seats
-        super(Course, self).save(*args, **kwargs)
+        try:
+            this = self.__class__.objects.get(pk=self.pk)
+            if this.photo != self.photo:
+                this.photo.delete(save=False)
+        except:
+            pass
+        super(self.__class__, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        ret = super(self.__class__, self).delete(*args, **kwargs)
+        self.photo.delete(save=False)
+        return ret
 
 
 class Lesson(models.Model):

@@ -13,5 +13,6 @@ urlpatterns = [
     url(r'^profile/$', views.profile, name='profile'),
     url(r'^profile/edit/$', views.profile_edit, name='profile_edit'),
     url(r'^logout/$', views.logout_view, name='logout'),
-    url(r'^(?P<slug>[\w-]+)/$', views.city_detail, name='city_detail'),
+    url(r'^(?P<city_slug>[\w-]+)/$', views.city_detail, name='city_detail'),
+    url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/$', views.theme_detail, name='theme_detail'),
 ]

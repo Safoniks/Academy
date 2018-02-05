@@ -1,0 +1,39 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <h2>Courses</h2>
+
+    <div>CITY</div>
+    <select onchange="location = this.value;">
+        {% for city in cities %}
+            <option value="{% url 'academy_admin:courses' %}?city={{ city.slug }}"
+            {% if city == selected_city %}selected{% endif %}>{{ city.name }}</option>
+        {% endfor %}
+    </select>
+
+    <div>THEME</div>
+    <select onchange="location = this.value;">
+        {% for theme in themes %}
+            <option value="{% url 'academy_admin:courses' %}?city={{ selected_city.slug }}&theme={{ theme.slug }}"
+            {% if theme == selected_theme %}selected{% endif %}>{{ theme.name }}</option>
+        {% endfor %}
+    </select>
+
+    <table style="margin: 50px 0;">
+        <tr>
+            <th>NAME</th>
+            <th>STATUS</th>
+        </tr>
+        {% for course in courses %}
+            <tr>
+                <td><a href="{% url 'academy_admin:courses' %}">{{ course.name }}</a></td>
+                <td>{{ course.status }}</td>
+{#                <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">[Edit]</a></td>#}
+                <td><a href="{% url 'academy_admin:delete_course' course.pk %}">[Delete]</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="{% url 'academy_admin:add_course' %}">[+ADD COURSE]</a>
+{% endblock %}
