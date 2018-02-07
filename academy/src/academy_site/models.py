@@ -24,7 +24,10 @@ class AuthUserManager(BaseUserManager):
             raise ValueError('The Email must be set')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save()
         return user
 
@@ -39,36 +42,35 @@ class AuthUserManager(BaseUserManager):
             raise ValueError('Admin must have is_superuser=True.')
         return self._create_user(email, password, **extra_fields)
 
-    def create_teacher(self, email, password, **extra_fields):
+    def create_teacher(self, email, password, profile_data, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Teacher must have is_staff=True.')
-        if extra_fields.get('is_superuser') is True:
-            raise ValueError('Teacher must have is_superuser=False.')
-        return self._create_user(email, password, **extra_fields)
+        auth_teacher = self._create_user(email, password, **extra_fields)
+        profile_data = profile_data if profile_data else {}
+        Teacher(auth_user=auth_teacher, **profile_data).save()
+        return auth_teacher
 
-    def create_site_user(self, email, password, **extra_fields):
+    def create_site_user(self, email, password, profile_data, **extra_fields):
         extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is True:
             raise ValueError('Site user must have is_staff=False.')
         if extra_fields.get('is_superuser') is True:
             raise ValueError('Site user must have is_superuser=False.')
-        return self._create_user(email, password, **extra_fields)
+        auth_user = self._create_user(email, password, **extra_fields)
+        profile_data = profile_data if profile_data else {}
+        SiteUser(auth_user=auth_user, **profile_data).save()
+        return auth_user
 
     def admins(self, city=None):
         admin_queryset = self.filter(is_staff=True, is_superuser=True, is_active=True)
         return admin_queryset.filter(city=city) if city else admin_queryset
 
-    def teachers(self, city=None):
-        teacher_queryset = self.filter(is_staff=True, is_superuser=False, is_active=True)
-        return teacher_queryset.filter(city=city) if city else teacher_queryset
-
-    def site_users(self, city=None):
-        site_user_queryset = self.filter(is_staff=False, is_superuser=False, is_active=True)
-        return site_user_queryset.filter(city=city) if city else site_user_queryset
+    def site_users(self):
+        return self.filter(is_staff=False, is_superuser=False, is_active=True)
 
 
 def get_user_photo_path(*args):
@@ -76,11 +78,6 @@ def get_user_photo_path(*args):
 
 
 class AuthUser(AbstractBaseUser, PermissionsMixin):
-    ADMIN = 'Administrator'
-    CITY_ADMIN = 'City Administrator'
-    TEACHER = 'Teacher'
-    SITE_USER = 'Site user'
-
     first_name = models.CharField(max_length=50, null=True, blank=True)
     last_name = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(unique=True)
@@ -131,26 +128,38 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_site_user(self):
-        return hasattr(self, 'site_user') or self.is_staff is False and self.is_superuser is False
+        return hasattr(self, 'site_user') or self.is_staff is False and (
+            self.is_superuser is False and self.is_active)
+
+    @property
+    def is_site_guest(self):
+        return hasattr(self, 'site_user') or self.is_staff is False and (
+            self.is_superuser is False and not self.is_active)
 
     @property
     def is_teacher(self):
-        return self.is_staff is True and self.is_superuser is False
+        return self.is_staff is True and self.is_superuser is False and self.teacher
 
     @property
     def is_city_admin(self):
-        return self.is_admin and self.city
+        return self.is_superuser is True and self.city
+
+    @property
+    def is_teacher_city_admin(self):
+        return self.is_city_admin and self.teacher
 
     @property
     def is_admin(self):
-        return self.is_superuser is True
+        return self.is_superuser is True and not self.city
 
     def get_role(self):
         roles_dict = {
-            'is_admin': self.ADMIN,
-            'is_city_admin': self.CITY_ADMIN,
-            'is_teacher': self.TEACHER,
-            'is_site_user': self.SITE_USER,
+            'is_admin': ADMIN,
+            'is_teacher_city_admin': TEACHER_CITY_ADMIN,
+            'is_city_admin': CITY_ADMIN,
+            'is_teacher': TEACHER,
+            'is_site_guest': SITE_GUEST,
+            'is_site_user': SITE_USER,
         }
         for prop, value in roles_dict.items():
             if getattr(self, prop, False):

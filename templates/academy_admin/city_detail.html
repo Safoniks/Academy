@@ -60,14 +60,14 @@
                 <th>EMAIL</th>
                 <th>LAST UPDATE</th>
             </tr>
-            {% for auth_teacher in teachers %}
+            {% for teacher in teachers %}
                 <tr>
                     <td>
-                        <a href="{% url 'academy_admin:teacher_detail' auth_teacher.teacher.pk %}">{{ auth_teacher.email }}</a>
+                        <a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">{{ teacher.auth_user.email }}</a>
                     </td>
-                    <td>{{ auth_teacher.teacher.last_update }}</td>
-                    <td><a href="{% url 'academy_admin:teacher_detail' auth_teacher.teacher.pk %}">[Edit]</a></td>
-                    <td><a href="{% url 'academy_admin:delete_teacher' auth_teacher.teacher.pk %}">[Delete]</a></td>
+                    <td>{{ teacher.last_update }}</td>
+                    <td><a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">[Edit]</a></td>
+                    <td><a href="{% url 'academy_admin:delete_teacher' teacher.pk %}">[Delete]</a></td>
                 </tr>
             {% endfor %}
         </table>

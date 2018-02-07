@@ -1,0 +1,11 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <h2>Add security</h2>
+    <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:add_security' %}">
+        {% csrf_token %}
+        {{ add_security_form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+{% endblock %}

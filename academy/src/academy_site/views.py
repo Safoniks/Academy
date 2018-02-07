@@ -15,7 +15,7 @@ from backend import login, logout
 from decorators import site_user_login_required
 
 
-from .models import City, Theme, Course
+from .models import City, Theme, Course, Teacher
 AuthUser = get_user_model()
 
 
@@ -117,7 +117,6 @@ def profile_edit(request):
     return render(request, 'academy_site/profile_edit.html', context)
 
 
-@site_user_login_required(login_url='academy_site:home')
 def city_detail(request, city_slug):
     try:
         city = City.objects.get(slug=city_slug)
@@ -127,13 +126,12 @@ def city_detail(request, city_slug):
     context = {
         'user': request.user,
         'city': city,
-        'teachers': AuthUser.objects.teachers(city=city),
+        'teachers': Teacher.objects.filter(auth_user__city=city),
         'contact_us_form': ContactUsForm(),
     }
     return render(request, 'academy_site/city_detail.html', context)
 
 
-@site_user_login_required(login_url='academy_site:home')
 def theme_detail(request, city_slug, theme_slug):
     try:
         theme = Theme.objects.get(city__slug=city_slug, slug=theme_slug)
@@ -147,7 +145,6 @@ def theme_detail(request, city_slug, theme_slug):
     return render(request, 'academy_site/theme_detail.html', context)
 
 
-@site_user_login_required(login_url='academy_site:home')
 def course_detail(request, city_slug, theme_slug, course_slug):
     try:
         course = Course.objects.get(theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug)
@@ -161,7 +158,6 @@ def course_detail(request, city_slug, theme_slug, course_slug):
     return render(request, 'academy_site/course_detail.html', context)
 
 
-@site_user_login_required(login_url='academy_site:home')
 def signup_course(request, city_slug, theme_slug, course_slug):
     user = request.user
     try:

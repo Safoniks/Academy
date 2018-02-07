@@ -14,6 +14,8 @@ from .forms import (
     AddThemeForm,
     UpdateThemeForm,
     AddCourseForm,
+    AddSecurityForm,
+    UpdateSecurityForm,
 )
 from backend import login, logout
 from decorators import admin_user_login_required, anonymous_user_required
@@ -107,7 +109,7 @@ def city_detail(request, pk):
     context = {
         'user': request.user,
         'city': city,
-        'teachers': AuthUser.objects.teachers(city=city),
+        'teachers': Teacher.objects.filter(auth_user__city=city),
         'update_city_form': form,
     }
     return render(request, 'academy_admin/city_detail.html', context)
@@ -194,12 +196,22 @@ def delete_partner(request, pk):
 
 
 @admin_user_login_required(login_url='academy_admin:login')
+def teachers(request):
+    all_teachers = Teacher.objects.all()
+    context = {
+        'user': request.user,
+        'teachers': all_teachers,
+    }
+    return render(request, 'academy_admin/teachers.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
 def add_teacher(request):
     if request.method == 'POST':
         form = AddTeacherForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
             return redirect(redirect_to)
     else:
         form = AddTeacherForm()
@@ -221,11 +233,14 @@ def teacher_detail(request, pk):
         form = UpdateTeacherForm(request.POST, request.FILES)
         if form.is_valid():
             form.save(teacher)
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
             return redirect(redirect_to)
     else:
         teacher_data = {
             'photo': teacher.auth_user.photo,
+            'first_name': teacher.auth_user.first_name,
+            'last_name': teacher.auth_user.last_name,
+            'is_city_admin': teacher.auth_user.is_superuser,
             'facebook_link': teacher.facebook_link,
             'instagram_link': teacher.instagram_link,
             'other_link': teacher.other_link,
@@ -248,7 +263,7 @@ def delete_teacher(request, pk):
         raise Http404
 
     teacher.auth_user.delete()
-    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
     return redirect(redirect_to)
 
 
@@ -416,4 +431,71 @@ def delete_course(request, pk):
 
     course.delete()
     redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:courses')
+    return redirect(redirect_to)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def security(request):
+    admins = AuthUser.objects.admins()
+    context = {
+        'user': request.user,
+        'admins': admins,
+    }
+    return render(request, 'academy_admin/security.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def add_security(request):
+    if request.method == 'POST':
+        form = AddSecurityForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
+            return redirect(redirect_to)
+    else:
+        form = AddSecurityForm()
+    context = {
+        'user': request.user,
+        'add_security_form': form,
+    }
+    return render(request, 'academy_admin/add_security.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def security_detail(request, pk):
+    try:
+        admin = AuthUser.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if request.method == 'POST':
+        form = UpdateSecurityForm(request.POST, request.FILES, admin=admin)
+        if form.is_valid():
+            form.save(admin)
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
+            return redirect(redirect_to)
+    else:
+        admin_data = {
+            'first_name': admin.first_name,
+            'last_name': admin.last_name,
+            'photo': admin.photo,
+        }
+        form = UpdateSecurityForm(initial=admin_data, admin=admin)
+    context = {
+        'user': request.user,
+        'admin': admin,
+        'form': form,
+    }
+    return render(request, 'academy_admin/security_detail.html', context)
+
+
+@admin_user_login_required(login_url='academy_admin:login')
+def delete_security(request, pk):
+    try:
+        admin = AuthUser.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    admin.delete()
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
     return redirect(redirect_to)

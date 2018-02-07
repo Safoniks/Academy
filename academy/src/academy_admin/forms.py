@@ -67,8 +67,11 @@ class PartnerForm(forms.Form):
 class AddTeacherForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField()
+    first_name = forms.CharField()
+    last_name = forms.CharField()
     photo = forms.ImageField()
     city = forms.ModelChoiceField(queryset=City.objects.all())
+    is_city_admin = forms.BooleanField(required=False)
     facebook_link = forms.URLField(required=False)
     instagram_link = forms.URLField(required=False)
     other_link = forms.URLField(required=False)
@@ -76,18 +79,23 @@ class AddTeacherForm(forms.Form):
 
     def save(self):
         data = self.cleaned_data
+        is_city_admin = data.pop('is_city_admin')
         auth_data = {
             'email': data.pop('email'),
             'password': data.pop('password'),
             'photo': data.pop('photo'),
+            'first_name': data.pop('first_name'),
+            'last_name': data.pop('last_name'),
             'city': data.pop('city'),
         }
-        auth_teacher = AuthUser.objects.create_teacher(**auth_data)
-        Teacher.objects.filter(auth_user=auth_teacher).update(**data)
+        AuthUser.objects.create_teacher(profile_data=data, is_superuser=is_city_admin, **auth_data)
 
 
 class UpdateTeacherForm(forms.Form):
     photo = forms.ImageField()
+    first_name = forms.CharField()
+    last_name = forms.CharField()
+    is_city_admin = forms.BooleanField(required=False)
     facebook_link = forms.URLField(required=False)
     instagram_link = forms.URLField(required=False)
     other_link = forms.URLField(required=False)
@@ -95,8 +103,10 @@ class UpdateTeacherForm(forms.Form):
 
     def save(self, teacher):
         data = self.cleaned_data
-        photo = data.pop('photo')
-        teacher.auth_user.photo = photo
+        teacher.auth_user.photo = data.pop('photo')
+        teacher.auth_user.first_name = data.pop('first_name')
+        teacher.auth_user.last_name = data.pop('last_name')
+        teacher.auth_user.is_superuser = data.pop('is_city_admin')
         teacher.auth_user.save()
         Teacher.objects.filter(pk=teacher.pk).update(**data)
 
@@ -174,3 +184,39 @@ class AddCourseForm(forms.Form):
         course.save()
         course.teachers.add(*teachers)
         course.partners.add(*partners)
+
+
+class AddSecurityForm(forms.Form):
+    email = forms.EmailField()
+    password = forms.CharField()
+    first_name = forms.CharField()
+    last_name = forms.CharField()
+    photo = forms.ImageField()
+    city = forms.ModelChoiceField(queryset=City.objects.all(), required=False)
+
+    def save(self):
+        data = self.cleaned_data
+        AuthUser.objects.create_admin(**data)
+
+
+class UpdateSecurityForm(forms.Form):
+    first_name = forms.CharField()
+    last_name = forms.CharField()
+    photo = forms.ImageField()
+
+    def __init__(self, *args, **kwargs):
+        admin = kwargs.pop('admin', None)
+        super(UpdateSecurityForm, self).__init__(*args, **kwargs)
+        if admin.get_role() == TEACHER_CITY_ADMIN:
+            self.fields['is_city_admin'] = forms.BooleanField(required=False)
+            self.initial['is_city_admin'] = admin.is_superuser
+
+    def save(self, admin):
+        data = self.cleaned_data
+        is_city_admin = data.pop('is_city_admin', None)
+        if not (is_city_admin is None):
+            admin.is_superuser = is_city_admin
+        admin.photo = data.pop('photo')
+        admin.first_name = data.pop('first_name')
+        admin.last_name = data.pop('last_name')
+        admin.save()

@@ -1,0 +1,23 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <h2>Teachers</h2>
+
+    <table style="margin-bottom: 50px;">
+        <tr>
+            <th>TEACHER</th>
+            <th>LAST UPDATE</th>
+        </tr>
+        {% for teacher in teachers %}
+            <tr>
+                <td><a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">{{ teacher.auth_user.full_name }}</a></td>
+                <td>{{ teacher.last_update }}</td>
+                <td><a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">[Edit]</a></td>
+                <td><a href="{% url 'academy_admin:delete_teacher' teacher.pk %}">[Delete]</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="{% url 'academy_admin:add_teacher' %}">[+ADD TEACHER]</a>
+{% endblock %}
