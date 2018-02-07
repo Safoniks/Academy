@@ -12,7 +12,8 @@
             {% for course in theme.course_set.all %}
                 <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;
                         background: url({{ course.photo.url }}) center; background-size: cover;">
-                    <a href="{% url 'academy_site:home' %}" style="color: white">
+                    <a href="{% url 'academy_site:course_detail' city_slug=theme.city.slug theme_slug=theme.slug course_slug=course.slug %}"
+                       style="color: white">
                         <p>name: {{ course.name }}</p>
                         <p>seats: {{ course.remaining_seats }}</p>
                     </a>

@@ -310,6 +310,7 @@ def get_course_photo_path(*args):
 
 class Course(models.Model):
     name = models.CharField(max_length=50)
+    slug = models.SlugField(blank=True)
     description = models.TextField(null=True, blank=True)
     practise_info = models.TextField(null=True, blank=True)
     location = models.CharField(max_length=100)
@@ -335,6 +336,7 @@ class Course(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.remaining_seats = self.seats
+            self.slug = slugify(self.name)
         try:
             this = self.__class__.objects.get(pk=self.pk)
             if this.photo != self.photo:
@@ -365,11 +367,13 @@ class UserCourse(models.Model):
     know_academy_through = models.CharField(max_length=100, null=True, blank=True)
     questions = models.CharField(max_length=100, null=True, blank=True)
     rate = models.IntegerField(default=0)
+    date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'user_course'
         verbose_name = 'user course'
         verbose_name_plural = 'user courses'
+        unique_together = ('user', 'course',)
 
     def __str__(self):
         return '{user}-{course}'.format(user=self.user.auth_user.full_name, course=self.course.name)

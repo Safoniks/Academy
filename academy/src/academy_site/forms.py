@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 
-from .models import SiteUser
+from .models import SiteUser, UserCourse
 
 AuthUser = get_user_model()
 
@@ -65,3 +65,35 @@ class ProfileForm(forms.Form):
         auth_user.save()
 
         SiteUser.objects.filter(auth_user=auth_user).update(**data)
+
+
+class SignUpCourseForm(forms.Form):
+    first_name = forms.CharField()
+    last_name = forms.CharField()
+    birthdate = forms.DateField()
+    email = forms.EmailField()
+    phone = forms.CharField()
+    address = forms.CharField()
+    postcode = forms.IntegerField()
+    photo = forms.ImageField()
+    know_academy_through = forms.CharField()
+    questions = forms.CharField()
+
+    def save(self, auth_user, course):
+        data = self.cleaned_data
+        know_academy_through = data.pop('know_academy_through')
+        questions = data.pop('questions')
+
+        auth_user.email = data.pop('email')
+        auth_user.first_name = data.pop('first_name')
+        auth_user.last_name = data.pop('last_name')
+        auth_user.photo = data.pop('photo')
+        auth_user.save()
+
+        SiteUser.objects.filter(auth_user=auth_user).update(**data)
+        UserCourse(
+            user=auth_user.siteuser,
+            course=course,
+            know_academy_through=know_academy_through,
+            questions=questions
+        ).save()

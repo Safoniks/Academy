@@ -4,12 +4,18 @@ from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.core.exceptions import ObjectDoesNotExist
 
-from .forms import SignUpForm, SignInForm, ContactUsForm, ProfileForm
+from .forms import (
+    SignUpForm,
+    SignInForm,
+    ContactUsForm,
+    ProfileForm,
+    SignUpCourseForm,
+)
 from backend import login, logout
 from decorators import site_user_login_required
 
 
-from .models import City, Theme
+from .models import City, Theme, Course
 AuthUser = get_user_model()
 
 
@@ -139,3 +145,50 @@ def theme_detail(request, city_slug, theme_slug):
         'theme': theme,
     }
     return render(request, 'academy_site/theme_detail.html', context)
+
+
+@site_user_login_required(login_url='academy_site:home')
+def course_detail(request, city_slug, theme_slug, course_slug):
+    try:
+        course = Course.objects.get(theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    context = {
+        'user': request.user,
+        'course': course,
+    }
+    return render(request, 'academy_site/course_detail.html', context)
+
+
+@site_user_login_required(login_url='academy_site:home')
+def signup_course(request, city_slug, theme_slug, course_slug):
+    user = request.user
+    try:
+        course = Course.objects.get(theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug)
+    except ObjectDoesNotExist:
+        raise Http404
+    if request.method == 'POST':
+        form = SignUpCourseForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(user, course)
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:course_detail')
+            return redirect(redirect_to, city_slug=city_slug, theme_slug=theme_slug, course_slug=course_slug)
+    else:
+        user_profile_data = {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'photo': user.photo,
+            'birthdate': user.siteuser.birthdate,
+            'phone': user.siteuser.phone,
+            'address': user.siteuser.address,
+            'postcode': user.siteuser.postcode,
+        }
+        form = SignUpCourseForm(initial=user_profile_data)
+    context = {
+        'user': user,
+        'course': course,
+        'form': form,
+    }
+    return render(request, 'academy_site/signup_course.html', context)

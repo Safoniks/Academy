@@ -1,0 +1,13 @@
+{% extends 'academy_site/base.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block content %}
+    <h2>COURSE: {{ course.name }}</h2>
+    <p>description: {{ course.description }}</p>
+    <form method="post" enctype="multipart/form-data"
+          action="{% url 'academy_site:signup_course' city_slug=course.theme.city.slug theme_slug=course.theme.slug course_slug=course.slug %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+{% endblock %}

@@ -15,4 +15,6 @@ urlpatterns = [
     url(r'^logout/$', views.logout_view, name='logout'),
     url(r'^(?P<city_slug>[\w-]+)/$', views.city_detail, name='city_detail'),
     url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/$', views.theme_detail, name='theme_detail'),
+    url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/(?P<course_slug>[\w-]+)/$', views.course_detail, name='course_detail'),
+    url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/(?P<course_slug>[\w-]+)/signup/$', views.signup_course, name='signup_course'),
 ]
