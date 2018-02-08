@@ -93,23 +93,13 @@ def profile(request):
 def profile_edit(request):
     user = request.user
     if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES)
+        form = ProfileForm(request.POST, request.FILES, user=user)
         if form.is_valid():
-            form.save(user)
+            form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:profile')
             return redirect(redirect_to)
     else:
-        user_profile_data = {
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'email': user.email,
-            'photo': user.photo,
-            'birthdate': user.siteuser.birthdate,
-            'phone': user.siteuser.phone,
-            'address': user.siteuser.address,
-            'postcode': user.siteuser.postcode,
-        }
-        form = ProfileForm(initial=user_profile_data)
+        form = ProfileForm(user=user)
     context = {
         'user': user,
         'edit_form': form,
@@ -165,23 +155,13 @@ def signup_course(request, city_slug, theme_slug, course_slug):
     except ObjectDoesNotExist:
         raise Http404
     if request.method == 'POST':
-        form = SignUpCourseForm(request.POST, request.FILES)
+        form = SignUpCourseForm(request.POST, request.FILES, user=user)
         if form.is_valid():
-            form.save(user, course)
+            form.save(course)
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:course_detail')
             return redirect(redirect_to, city_slug=city_slug, theme_slug=theme_slug, course_slug=course_slug)
     else:
-        user_profile_data = {
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'email': user.email,
-            'photo': user.photo,
-            'birthdate': user.siteuser.birthdate,
-            'phone': user.siteuser.phone,
-            'address': user.siteuser.address,
-            'postcode': user.siteuser.postcode,
-        }
-        form = SignUpCourseForm(initial=user_profile_data)
+        form = SignUpCourseForm(user=user)
     context = {
         'user': user,
         'course': course,

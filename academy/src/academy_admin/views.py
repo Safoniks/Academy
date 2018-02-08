@@ -6,16 +6,12 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import (
     LoginForm,
-    AddCityForm,
-    UpdateCityForm,
+    CityForm,
     PartnerForm,
-    AddTeacherForm,
-    UpdateTeacherForm,
-    AddThemeForm,
-    UpdateThemeForm,
+    TeacherForm,
+    ThemeForm,
     AddCourseForm,
-    AddSecurityForm,
-    UpdateSecurityForm,
+    SecurityForm,
 )
 from backend import login, logout
 from decorators import admin_user_login_required, anonymous_user_required
@@ -62,13 +58,13 @@ def index(request):
 @admin_user_login_required(login_url='academy_admin:login')
 def add_city(request):
     if request.method == 'POST':
-        add_city_form = AddCityForm(request.POST, request.FILES)
+        add_city_form = CityForm(request.POST, request.FILES)
         if add_city_form.is_valid():
             add_city_form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
             return redirect(redirect_to)
     else:
-        add_city_form = AddCityForm()
+        add_city_form = CityForm()
     context = {
         'user': request.user,
         'add_city_form': add_city_form,
@@ -94,18 +90,11 @@ def city_detail(request, pk):
         raise Http404
 
     if request.method == 'POST':
-        form = UpdateCityForm(request.POST, request.FILES)
+        form = CityForm(request.POST, request.FILES, city=city)
         if form.is_valid():
-            form.save(city)
+            form.save()
     else:
-        city_data = {
-            'description': city.description,
-            'school_address': city.school_address,
-            'email': city.email,
-            'phone': city.phone,
-            'photo': city.photo,
-        }
-        form = UpdateCityForm(initial=city_data)
+        form = CityForm(city=city)
     context = {
         'user': request.user,
         'city': city,
@@ -162,19 +151,13 @@ def partner_detail(request, pk):
         raise Http404
 
     if request.method == 'POST':
-        form = PartnerForm(request.POST, request.FILES)
+        form = PartnerForm(request.POST, request.FILES, partner=partner)
         if form.is_valid():
-            form.save(partner)
+            form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
             return redirect(redirect_to)
     else:
-        partner_data = {
-            'name': partner.name,
-            'link': partner.link,
-            'logo': partner.logo,
-            'cities': partner.city_set.all(),
-        }
-        form = PartnerForm(initial=partner_data)
+        form = PartnerForm(partner=partner)
     context = {
         'user': request.user,
         'partner': partner,
@@ -208,13 +191,13 @@ def teachers(request):
 @admin_user_login_required(login_url='academy_admin:login')
 def add_teacher(request):
     if request.method == 'POST':
-        form = AddTeacherForm(request.POST, request.FILES)
+        form = TeacherForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
             return redirect(redirect_to)
     else:
-        form = AddTeacherForm()
+        form = TeacherForm()
     context = {
         'user': request.user,
         'add_teacher_form': form,
@@ -230,23 +213,13 @@ def teacher_detail(request, pk):
         raise Http404
 
     if request.method == 'POST':
-        form = UpdateTeacherForm(request.POST, request.FILES)
+        form = TeacherForm(request.POST, request.FILES, teacher=teacher)
         if form.is_valid():
-            form.save(teacher)
+            form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
             return redirect(redirect_to)
     else:
-        teacher_data = {
-            'photo': teacher.auth_user.photo,
-            'first_name': teacher.auth_user.first_name,
-            'last_name': teacher.auth_user.last_name,
-            'is_city_admin': teacher.auth_user.is_superuser,
-            'facebook_link': teacher.facebook_link,
-            'instagram_link': teacher.instagram_link,
-            'other_link': teacher.other_link,
-            'bio': teacher.bio,
-        }
-        form = UpdateTeacherForm(initial=teacher_data)
+        form = TeacherForm(teacher=teacher)
     context = {
         'user': request.user,
         'teacher': teacher,
@@ -293,13 +266,13 @@ def themes(request):
 @admin_user_login_required(login_url='academy_admin:login')
 def add_theme(request):
     if request.method == 'POST':
-        form = AddThemeForm(request.POST, request.FILES)
+        form = ThemeForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
             return redirect(redirect_to)
     else:
-        form = AddThemeForm()
+        form = ThemeForm()
     context = {
         'user': request.user,
         'add_theme_form': form,
@@ -314,20 +287,14 @@ def theme_detail(request, pk):
     except ObjectDoesNotExist:
         raise Http404
 
-    theme_partners = theme.partners.all()
     if request.method == 'POST':
-        form = UpdateThemeForm(request.POST, request.FILES, partners=theme_partners)
+        form = ThemeForm(request.POST, request.FILES, theme=theme)
         if form.is_valid():
-            form.save(theme)
+            form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
             return redirect(redirect_to)
     else:
-        theme_data = {
-            'description': theme.description,
-            'photo': theme.photo,
-            'partners': theme_partners,
-        }
-        form = UpdateThemeForm(initial=theme_data, partners=theme_partners)
+        form = ThemeForm(theme=theme)
     context = {
         'user': request.user,
         'theme': theme,
@@ -447,13 +414,13 @@ def security(request):
 @admin_user_login_required(login_url='academy_admin:login')
 def add_security(request):
     if request.method == 'POST':
-        form = AddSecurityForm(request.POST, request.FILES)
+        form = SecurityForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
             return redirect(redirect_to)
     else:
-        form = AddSecurityForm()
+        form = SecurityForm()
     context = {
         'user': request.user,
         'add_security_form': form,
@@ -469,18 +436,13 @@ def security_detail(request, pk):
         raise Http404
 
     if request.method == 'POST':
-        form = UpdateSecurityForm(request.POST, request.FILES, admin=admin)
+        form = SecurityForm(request.POST, request.FILES, admin=admin)
         if form.is_valid():
-            form.save(admin)
+            form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
             return redirect(redirect_to)
     else:
-        admin_data = {
-            'first_name': admin.first_name,
-            'last_name': admin.last_name,
-            'photo': admin.photo,
-        }
-        form = UpdateSecurityForm(initial=admin_data, admin=admin)
+        form = SecurityForm(admin=admin)
     context = {
         'user': request.user,
         'admin': admin,

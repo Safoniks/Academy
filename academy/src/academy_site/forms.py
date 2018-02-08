@@ -11,7 +11,7 @@ AuthUser = get_user_model()
 class SignUpForm(forms.ModelForm):
     class Meta:
         model = AuthUser
-        fields = ('email', 'password', )
+        fields = ('email', 'password',)
 
     def save(self, commit=True):
         super(SignUpForm, self).save(commit=False)
@@ -49,6 +49,23 @@ class ProfileForm(forms.Form):
     postcode = forms.IntegerField(required=False)
     photo = forms.ImageField(required=False)
 
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(ProfileForm, self).__init__(*args, **kwargs)
+        if user:
+            self.user = user
+            if not self.data:
+                self.initial.update({
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                    'photo': user.photo,
+                    'birthdate': user.siteuser.birthdate,
+                    'phone': user.siteuser.phone,
+                    'address': user.siteuser.address,
+                    'postcode': user.siteuser.postcode,
+                })
+
     # def clean(self):
     #     form_data = self.cleaned_data
     #     if form_data['password'] != form_data['password_repeat']:
@@ -56,12 +73,17 @@ class ProfileForm(forms.Form):
     #         del form_data['password']
     #     return form_data
 
-    def save(self, auth_user):
+    def save(self):
         data = self.cleaned_data
-        auth_user.email = data.pop('email')
-        auth_user.first_name = data.pop('first_name')
-        auth_user.last_name = data.pop('last_name')
-        auth_user.photo = data.pop('photo')
+        auth_user = self.user
+        auth_data = {
+            'email': data.pop('email'),
+            'first_name': data.pop('first_name'),
+            'last_name': data.pop('last_name'),
+            'photo': data.pop('photo'),
+        }
+        for field in auth_data:
+            setattr(auth_user, field, auth_data[field])
         auth_user.save()
 
         SiteUser.objects.filter(auth_user=auth_user).update(**data)
@@ -79,15 +101,37 @@ class SignUpCourseForm(forms.Form):
     know_academy_through = forms.CharField()
     questions = forms.CharField()
 
-    def save(self, auth_user, course):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(SignUpCourseForm, self).__init__(*args, **kwargs)
+        if user:
+            self.user = user
+            if not self.data:
+                self.initial.update({
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                    'photo': user.photo,
+                    'birthdate': user.siteuser.birthdate,
+                    'phone': user.siteuser.phone,
+                    'address': user.siteuser.address,
+                    'postcode': user.siteuser.postcode,
+                })
+
+    def save(self, course):
         data = self.cleaned_data
+        auth_user = self.user
         know_academy_through = data.pop('know_academy_through')
         questions = data.pop('questions')
+        auth_data = {
+            'email': data.pop('email'),
+            'first_name': data.pop('first_name'),
+            'last_name': data.pop('last_name'),
+            'photo': data.pop('photo'),
+        }
 
-        auth_user.email = data.pop('email')
-        auth_user.first_name = data.pop('first_name')
-        auth_user.last_name = data.pop('last_name')
-        auth_user.photo = data.pop('photo')
+        for field in auth_data:
+            setattr(auth_user, field, auth_data[field])
         auth_user.save()
 
         SiteUser.objects.filter(auth_user=auth_user).update(**data)
