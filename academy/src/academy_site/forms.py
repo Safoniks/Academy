@@ -1,7 +1,11 @@
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
+from django.utils import timezone
+
+from utils import generate_confirmation_code
 
 from .models import SiteUser, UserCourse
 
@@ -11,13 +15,15 @@ AuthUser = get_user_model()
 class SignUpForm(forms.ModelForm):
     class Meta:
         model = AuthUser
-        fields = ('email', 'password',)
+        fields = ('first_name', 'last_name', 'email', 'password',)
 
     def save(self, commit=True):
-        super(SignUpForm, self).save(commit=False)
-        email = self.cleaned_data['email']
-        password = self.cleaned_data['password']
-        user = AuthUser.objects.create_site_user(email, password)
+        data = self.cleaned_data
+        profile_data = {
+            'confirmation_code': generate_confirmation_code(data['email']),
+            'confirmation_code_expires': timezone.now() + settings.CONFIRMATION_CODE_EXPIRE,
+        }
+        user = AuthUser.objects.create_site_user(profile_data=profile_data, **data)
         if commit:
             user.save()
         return user
@@ -45,6 +51,8 @@ class ProfileForm(forms.Form):
     birthdate = forms.DateField(required=False)
     email = forms.EmailField()
     phone = forms.CharField(required=False)
+    country = forms.CharField(required=False)
+    city = forms.CharField(required=False)
     address = forms.CharField(required=False)
     postcode = forms.IntegerField(required=False)
     photo = forms.ImageField(required=False)
@@ -52,6 +60,7 @@ class ProfileForm(forms.Form):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super(ProfileForm, self).__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs['readonly'] = True
         if user:
             self.user = user
             if not self.data:
@@ -62,6 +71,8 @@ class ProfileForm(forms.Form):
                     'photo': user.photo,
                     'birthdate': user.siteuser.birthdate,
                     'phone': user.siteuser.phone,
+                    'country': user.siteuser.country,
+                    'city': user.siteuser.city,
                     'address': user.siteuser.address,
                     'postcode': user.siteuser.postcode,
                 })
@@ -95,16 +106,22 @@ class SignUpCourseForm(forms.Form):
     birthdate = forms.DateField()
     email = forms.EmailField()
     phone = forms.CharField()
+    country = forms.CharField()
+    city = forms.CharField()
     address = forms.CharField()
     postcode = forms.IntegerField()
     photo = forms.ImageField()
+    mother_language = forms.CharField()
     know_academy_through = forms.CharField()
     questions = forms.CharField()
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
+        course = kwargs.pop('course', None)
         super(SignUpCourseForm, self).__init__(*args, **kwargs)
-        if user:
+        self.course = course
+        if getattr(user, 'is_authenticated', False):
+            self.fields['email'].widget.attrs['readonly'] = True
             self.user = user
             if not self.data:
                 self.initial.update({
@@ -118,9 +135,25 @@ class SignUpCourseForm(forms.Form):
                     'postcode': user.siteuser.postcode,
                 })
 
-    def save(self, course):
+    def clean(self):
+        form_data = self.cleaned_data
+        email = form_data['email']
+        if UserCourse.objects.filter(user__auth_user__email=email, course=self.course).exists():
+            self._errors["email"] = ["Already signed up with this email."]
+            del form_data['email']
+        if not isinstance(self.user, AuthUser):
+            try:
+                self.user = AuthUser.objects.get(email=email)
+            except ObjectDoesNotExist:
+                pass
+        return form_data
+
+    def save(self):
         data = self.cleaned_data
         auth_user = self.user
+        if 'signup_and_create' in self.data and not auth_user.is_active:
+            pass
+        mother_language = data.pop('mother_language')
         know_academy_through = data.pop('know_academy_through')
         questions = data.pop('questions')
         auth_data = {
@@ -137,7 +170,8 @@ class SignUpCourseForm(forms.Form):
         SiteUser.objects.filter(auth_user=auth_user).update(**data)
         UserCourse(
             user=auth_user.siteuser,
-            course=course,
+            course=self.course,
+            mother_language=mother_language,
             know_academy_through=know_academy_through,
             questions=questions
         ).save()

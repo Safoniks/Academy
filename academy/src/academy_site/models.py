@@ -170,8 +170,13 @@ class SiteUser(models.Model):
     auth_user = models.OneToOneField('AuthUser', on_delete=models.CASCADE)
     birthdate = models.DateField(null=True, blank=True)
     phone = models.CharField(null=True, blank=True, max_length=20)
+    country = models.CharField(null=True, blank=True, max_length=50)
+    city = models.CharField(null=True, blank=True, max_length=50)
     address = models.CharField(null=True, blank=True, max_length=50)
     postcode = models.IntegerField(null=True, blank=True)
+    is_confirmed = models.BooleanField(default=False)
+    confirmation_code = models.CharField(max_length=64)
+    confirmation_code_expires = models.DateTimeField()
     courses = models.ManyToManyField('Course', through='UserCourse')
 
     class Meta:
@@ -373,6 +378,7 @@ class Lesson(models.Model):
 class UserCourse(models.Model):
     user = models.ForeignKey('SiteUser', on_delete=models.CASCADE)
     course = models.ForeignKey('Course', on_delete=models.CASCADE)
+    mother_language = models.CharField(max_length=100, null=True, blank=True)
     know_academy_through = models.CharField(max_length=100, null=True, blank=True)
     questions = models.CharField(max_length=100, null=True, blank=True)
     rate = models.IntegerField(default=0)

@@ -4,6 +4,7 @@
     <h1><a href="{% url 'academy_site:home' %}">HERSTELACADEMIE</a></h1>
     <div>
         {% if user.is_authenticated %}
+            {% if not user.siteuser.is_confirmed %}<p style="color:red;">please confirm e-mail</p>{% endif %}
             <div style="display: inline-block; margin-right: 10px;">
                 {% if user.photo %}
                     <img style="height: 50px; width: 50px;" src="{{ user.photo.url }}" alt="">

@@ -8,6 +8,7 @@
           action="{% url 'academy_site:signup_course' city_slug=course.theme.city.slug theme_slug=course.theme.slug course_slug=course.slug %}">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Save</button>
+        <input type="submit" name="signup" value="SignUp" />
+        {% if not user.is_authenticated %}<input type="submit" name="signup_and_create" value="SignUp and Create" />{% endif %}
     </form>
 {% endblock %}

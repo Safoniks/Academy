@@ -4,7 +4,8 @@ DEBUG = False
 
 SECRET_KEY = 'YOUR_KEY'
 
-ALLOWED_HOSTS = ['YOUR_IP']
+HOST = 'YOUR_IP'
+ALLOWED_HOSTS = [HOST]
 
 DATABASES = {
     'default': {

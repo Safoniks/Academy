@@ -1,8 +1,9 @@
 from django.contrib.auth import authenticate, get_user_model
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 
 from .forms import (
     SignUpForm,
@@ -12,8 +13,8 @@ from .forms import (
     SignUpCourseForm,
 )
 from backend import login, logout
-from decorators import site_user_login_required
-
+from decorators import site_user_login_required, anonymous_user_required
+from utils import send_confirmation_email, generate_confirmation_code
 
 from .models import City, Theme, Course, Teacher
 AuthUser = get_user_model()
@@ -32,6 +33,7 @@ def home(request):
     return render(request, 'academy_site/home.html', context)
 
 
+@anonymous_user_required(login_url='academy_site:home')
 def signup(request):
     if request.method == 'POST':
         signup_form = SignUpForm(request.POST)
@@ -41,6 +43,7 @@ def signup(request):
             password = signup_form.cleaned_data.get('password')
             user = authenticate(request, email=email, password=password)
             login(request, user)
+            send_confirmation_email(user)
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
             return redirect(redirect_to)
         return HttpResponse('400')
@@ -48,6 +51,42 @@ def signup(request):
         raise Http404
 
 
+def email_confirm(request, user_id, code):
+    activation_expired = False
+    already_active = False
+    user = get_object_or_404(AuthUser, id=user_id, siteuser__confirmation_code=code)
+    if not user.siteuser.is_confirmed:
+        if timezone.now() > user.siteuser.confirmation_code_expires:
+            activation_expired = True #Display: offer the user to send a new activation link
+            return HttpResponse('400')
+        else:
+            user.siteuser.is_confirmed = True
+            user.siteuser.save()
+
+    else:
+        already_active = True #Display : error message
+        return HttpResponse('400')
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
+    return redirect(redirect_to)
+
+
+@site_user_login_required(login_url='academy_site:home')
+def new_confirmation_code(request):
+    user = request.user
+    if not user.siteuser.is_confirmed:
+        user.siteuser.confirmation_code = generate_confirmation_code(user.email)
+        user.siteuser.confirmation_code_expires = timezone.now() + settings.CONFIRMATION_CODE_EXPIRE
+        user.siteuser.save()
+
+        send_confirmation_email(user)
+    else:
+        return HttpResponse('400')
+
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
+    return redirect(redirect_to)
+
+
+@anonymous_user_required(login_url='academy_site:home')
 def signin(request):
     if request.method == 'POST':
         signin_form = SignInForm(request.POST)
@@ -115,6 +154,8 @@ def city_detail(request, city_slug):
 
     context = {
         'user': request.user,
+        'signup_form': SignUpForm(),
+        'signin_form': SignInForm(),
         'city': city,
         'teachers': Teacher.objects.filter(auth_user__city=city),
         'contact_us_form': ContactUsForm(),
@@ -130,6 +171,8 @@ def theme_detail(request, city_slug, theme_slug):
 
     context = {
         'user': request.user,
+        'signup_form': SignUpForm(),
+        'signin_form': SignInForm(),
         'theme': theme,
     }
     return render(request, 'academy_site/theme_detail.html', context)
@@ -143,6 +186,8 @@ def course_detail(request, city_slug, theme_slug, course_slug):
 
     context = {
         'user': request.user,
+        'signup_form': SignUpForm(),
+        'signin_form': SignInForm(),
         'course': course,
     }
     return render(request, 'academy_site/course_detail.html', context)
@@ -155,15 +200,17 @@ def signup_course(request, city_slug, theme_slug, course_slug):
     except ObjectDoesNotExist:
         raise Http404
     if request.method == 'POST':
-        form = SignUpCourseForm(request.POST, request.FILES, user=user)
+        form = SignUpCourseForm(request.POST, request.FILES, user=user, course=course)
         if form.is_valid():
-            form.save(course)
+            form.save()
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:course_detail')
             return redirect(redirect_to, city_slug=city_slug, theme_slug=theme_slug, course_slug=course_slug)
     else:
-        form = SignUpCourseForm(user=user)
+        form = SignUpCourseForm(user=user, course=course)
     context = {
         'user': user,
+        'signup_form': SignUpForm(),
+        'signin_form': SignInForm(),
         'course': course,
         'form': form,
     }

@@ -1,12 +1,9 @@
 import os
 import sys
+from datetime import timedelta
 
 BASE_DIR = os.path.abspath(os.path.join(__file__, '../../../'))
 sys.path.append(os.path.join(BASE_DIR, 'academy', 'src'))
-
-SECRET_KEY = 'k@^%p5)@&p46+o3ae%99h_&qbr9g+^!@4h5lnlf5!k(=1&n=2v'
-
-ALLOWED_HOSTS = ['*']
 
 # use local.py to change settings
 DATABASES = {
@@ -113,6 +110,9 @@ SERVER_EMAIL = 'root@localhost'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
 CONTACT_US_SUBJECT = 'Contact with {name}'
+CONFIRMATION_EMAIL_SUBJECT = 'Confirm email'
+
+CONFIRMATION_CODE_EXPIRE = timedelta(days=2)
 
 INITIAL_ADMIN = {
     'email': 'admin@admin.com',
