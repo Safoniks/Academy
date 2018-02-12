@@ -111,8 +111,9 @@ DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
 CONTACT_US_SUBJECT = 'Contact with {name}'
 CONFIRMATION_EMAIL_SUBJECT = 'Confirm email'
+RESET_PASSWORD_SUBJECT = 'Reset password'
 
-CONFIRMATION_CODE_EXPIRE = timedelta(days=2)
+SIGNUP_CONFIRMATION_CODE_EXPIRE = timedelta(days=1)
 
 INITIAL_ADMIN = {
     'email': 'admin@admin.com',

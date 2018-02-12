@@ -4,7 +4,6 @@ from django.conf import settings
 from django.urls import reverse
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
-from django.template import Context
 
 
 def generate_confirmation_code(email):
@@ -28,6 +27,23 @@ def send_confirmation_email(user):
     }
 
     subject, from_email, to = settings.CONFIRMATION_EMAIL_SUBJECT, settings.DEFAULT_FROM_EMAIL, user.email
+    text_content = plaintext.render(context)
+    html_content = htmly.render(context)
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+
+def send_reset_password_email(user, new_password):
+    plaintext = get_template('academy_site/inclusion/reset_password.txt')
+    htmly = get_template('academy_site/inclusion/reset_password.html')
+
+    context = {
+        'full_name': user.full_name,
+        'new_password': new_password,
+    }
+
+    subject, from_email, to = settings.RESET_PASSWORD_SUBJECT, settings.DEFAULT_FROM_EMAIL, user.email
     text_content = plaintext.render(context)
     html_content = htmly.render(context)
     msg = EmailMultiAlternatives(subject, text_content, from_email, [to])

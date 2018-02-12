@@ -8,4 +8,11 @@
         {{ edit_form.as_p }}
         <button type="submit">Save</button>
     </form>
+
+    <p>Change password</p>
+    <form method="post" action="{% url 'academy_site:change_password' %}">
+        {% csrf_token %}
+        {{ change_password_form.as_p }}
+        <button type="submit">Change</button>
+    </form>
 {% endblock %}

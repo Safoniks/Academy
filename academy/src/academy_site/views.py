@@ -4,6 +4,7 @@ from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from django.contrib import messages
 
 from .forms import (
     SignUpForm,
@@ -11,6 +12,8 @@ from .forms import (
     ContactUsForm,
     ProfileForm,
     SignUpCourseForm,
+    ResetPasswordForm,
+    ChangePassword,
 )
 from backend import login, logout
 from decorators import site_user_login_required, anonymous_user_required
@@ -29,6 +32,7 @@ def home(request):
         'signup_form': SignUpForm(),
         'signin_form': SignInForm(),
         'contact_us_form': ContactUsForm(),
+        'reset_password_form': ResetPasswordForm(),
     }
     return render(request, 'academy_site/home.html', context)
 
@@ -44,9 +48,42 @@ def signup(request):
             user = authenticate(request, email=email, password=password)
             login(request, user)
             send_confirmation_email(user)
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
-            return redirect(redirect_to)
-        return HttpResponse('400')
+            messages.success(request, 'Підтвердження емейла на почті')
+        else:
+            messages.error(request, 'Error')
+        redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
+        return redirect(redirect_to)
+    else:
+        raise Http404
+
+
+@anonymous_user_required(login_url='academy_site:home')
+def reset_password(request):
+    if request.method == 'POST':
+        form = ResetPasswordForm(request.POST)
+        if form.is_valid():
+            form.send_email()
+            messages.success(request, 'Новий пароль на почті.')
+        else:
+            messages.error(request, 'Error')
+        redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
+        return redirect(redirect_to)
+    else:
+        raise Http404
+
+
+@site_user_login_required(login_url='academy_site:home')
+def change_password(request):
+    user = request.user
+    if request.method == 'POST':
+        form = ChangePassword(request.POST, user=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your password was successfully updated!')
+        else:
+            messages.error(request, 'Error')
+        redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:profile')
+        return redirect(redirect_to)
     else:
         raise Http404
 
@@ -58,14 +95,15 @@ def email_confirm(request, user_id, code):
     if not user.siteuser.is_confirmed:
         if timezone.now() > user.siteuser.confirmation_code_expires:
             activation_expired = True #Display: offer the user to send a new activation link
-            return HttpResponse('400')
+            messages.error(request, 'Лінка вже не дійсна')
         else:
             user.siteuser.is_confirmed = True
             user.siteuser.save()
+            messages.success(request, 'Email підтверджено')
 
     else:
         already_active = True #Display : error message
-        return HttpResponse('400')
+        messages.error(request, 'Вже підтвержено')
     redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
     return redirect(redirect_to)
 
@@ -75,12 +113,13 @@ def new_confirmation_code(request):
     user = request.user
     if not user.siteuser.is_confirmed:
         user.siteuser.confirmation_code = generate_confirmation_code(user.email)
-        user.siteuser.confirmation_code_expires = timezone.now() + settings.CONFIRMATION_CODE_EXPIRE
+        user.siteuser.confirmation_code_expires = timezone.now() + settings.SIGNUP_CONFIRMATION_CODE_EXPIRE
         user.siteuser.save()
 
         send_confirmation_email(user)
+        messages.success(request, 'Підтвердження емейла на почті')
     else:
-        return HttpResponse('400')
+        raise Http404
 
     redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
     return redirect(redirect_to)
@@ -96,9 +135,10 @@ def signin(request):
             user = authenticate(request, email=email, password=password)
             if user:
                 login(request, user)
-                redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
-                return redirect(redirect_to)
-        return HttpResponse('400')
+        else:
+            messages.error(request, 'Error')
+        redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
+        return redirect(redirect_to)
     else:
         raise Http404
 
@@ -113,9 +153,11 @@ def contact_us(request):
         contact_us_form = ContactUsForm(request.POST)
         if contact_us_form.is_valid():
             contact_us_form.contact_us()
-            return HttpResponse('200')
+            messages.success(request, 'Відправлено')
         else:
-            return HttpResponse('400')
+            messages.error(request, 'Error')
+        redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
+        return redirect(redirect_to)
     else:
         raise Http404
 
@@ -135,6 +177,7 @@ def profile_edit(request):
         form = ProfileForm(request.POST, request.FILES, user=user)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Профіль оновлено')
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:profile')
             return redirect(redirect_to)
     else:
@@ -142,6 +185,7 @@ def profile_edit(request):
     context = {
         'user': user,
         'edit_form': form,
+        'change_password_form': ChangePassword(),
     }
     return render(request, 'academy_site/profile_edit.html', context)
 
@@ -159,6 +203,7 @@ def city_detail(request, city_slug):
         'city': city,
         'teachers': Teacher.objects.filter(auth_user__city=city),
         'contact_us_form': ContactUsForm(),
+        'reset_password_form': ResetPasswordForm(),
     }
     return render(request, 'academy_site/city_detail.html', context)
 
@@ -174,6 +219,7 @@ def theme_detail(request, city_slug, theme_slug):
         'signup_form': SignUpForm(),
         'signin_form': SignInForm(),
         'theme': theme,
+        'reset_password_form': ResetPasswordForm(),
     }
     return render(request, 'academy_site/theme_detail.html', context)
 
@@ -189,6 +235,7 @@ def course_detail(request, city_slug, theme_slug, course_slug):
         'signup_form': SignUpForm(),
         'signin_form': SignInForm(),
         'course': course,
+        'reset_password_form': ResetPasswordForm(),
     }
     return render(request, 'academy_site/course_detail.html', context)
 
@@ -213,5 +260,6 @@ def signup_course(request, city_slug, theme_slug, course_slug):
         'signin_form': SignInForm(),
         'course': course,
         'form': form,
+        'reset_password_form': ResetPasswordForm(),
     }
     return render(request, 'academy_site/signup_course.html', context)
