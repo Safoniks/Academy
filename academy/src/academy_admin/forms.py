@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from academy_site.models import City, Partner, Teacher, Theme, Course
+from academy_site.models import City, Partner, AdminProfile, Theme, Course
 from academy_site.coices import *
 
 AuthUser = get_user_model()
@@ -13,8 +13,9 @@ class LoginForm(forms.Form):
 
 class CityForm(forms.Form):
     name = forms.CharField()
-    description = forms.CharField(widget=forms.Textarea)
-    school_address = forms.CharField()
+    short_description = forms.CharField(widget=forms.Textarea)
+    full_description = forms.CharField(widget=forms.Textarea)
+    location = forms.CharField()
     email = forms.EmailField()
     phone = forms.CharField()
     photo = forms.ImageField()
@@ -27,8 +28,9 @@ class CityForm(forms.Form):
             self.city = city
             if not self.data:
                 self.initial.update({
-                    'description': city.description,
-                    'school_address': city.school_address,
+                    'short_description': city.short_description,
+                    'full_description': city.full_description,
+                    'location': city.location,
                     'email': city.email,
                     'phone': city.phone,
                     'photo': city.photo,
@@ -128,7 +130,7 @@ class TeacherForm(forms.Form):
                 setattr(teacher.auth_user, field, data[field])
             teacher.auth_user.is_superuser = is_city_admin
             teacher.auth_user.save()
-            Teacher.objects.filter(pk=teacher.pk).update(**profile_data)
+            # Teacher.objects.filter(pk=teacher.pk).update(**profile_data)
         else:
             AuthUser.objects.create_teacher(profile_data=profile_data, is_superuser=is_city_admin, **data)
 
@@ -184,9 +186,9 @@ class AddCourseForm(forms.Form):
     seats = forms.IntegerField()
     status = forms.ChoiceField(choices=STATUS_CHOICES, widget=forms.Select())
     theme = forms.ModelChoiceField(queryset=Theme.objects.all())
-    teachers = forms.ModelMultipleChoiceField(
-        queryset=Teacher.objects.all(), widget=forms.CheckboxSelectMultiple, required=False
-    )
+    # teachers = forms.ModelMultipleChoiceField(
+    #     queryset=Teacher.objects.all(), widget=forms.CheckboxSelectMultiple, required=False
+    # )
     partners = forms.ModelMultipleChoiceField(
         queryset=Partner.objects.all(), widget=forms.CheckboxSelectMultiple, required=False
     )
@@ -225,9 +227,9 @@ class SecurityForm(forms.Form):
         admin = kwargs.pop('admin', None)
         super(SecurityForm, self).__init__(*args, **kwargs)
         if admin:
-            if admin.get_role() == TEACHER_CITY_ADMIN:
-                self.fields['is_city_admin'] = forms.BooleanField(required=False)
-                self.initial['is_city_admin'] = admin.is_superuser
+            # if admin.get_role() == TEACHER_CITY_ADMIN:
+            #     self.fields['is_city_admin'] = forms.BooleanField(required=False)
+            #     self.initial['is_city_admin'] = admin.is_superuser
             self.admin = admin
             self.fields.pop('email', None)
             self.fields.pop('password', None)

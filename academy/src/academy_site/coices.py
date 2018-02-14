@@ -12,9 +12,7 @@ STATUS_CHOICES = (
     (ARCHIVED, ARCHIVED),
 )
 
-ADMIN = 'Administrator'
-CITY_ADMIN = 'City Administrator'
-TEACHER_CITY_ADMIN = 'Teacher(City Administrator)'
+ADMINISTRATOR = 'Administrator'
+MODERATOR = 'Moderator'
 TEACHER = 'Teacher'
 SITE_USER = 'Site user'
-SITE_GUEST = 'Guest of the site'

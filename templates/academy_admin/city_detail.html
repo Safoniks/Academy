@@ -22,7 +22,6 @@
                 <tr>
                     <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">{{ theme.name }}</a></td>
                     <td>{{ theme.last_update }}</td>
-                    <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">[Edit]</a></td>
                     <td><a href="{% url 'academy_admin:delete_theme' theme.pk %}">[Delete]</a></td>
                 </tr>
             {% endfor %}
@@ -43,7 +42,6 @@
                 <tr>
                     <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">{{ partner.name }}</a></td>
                     <td>{{ partner.last_update }}</td>
-                    <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">[Edit]</a></td>
                     <td><a href="{% url 'academy_admin:delete_partner' partner.pk %}">[Delete]</a></td>
                 </tr>
             {% endfor %}
@@ -57,16 +55,15 @@
 
         <table style="margin-bottom: 30px;">
             <tr>
-                <th>EMAIL</th>
+                <th>NAME</th>
                 <th>LAST UPDATE</th>
             </tr>
             {% for teacher in teachers %}
                 <tr>
                     <td>
-                        <a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">{{ teacher.auth_user.email }}</a>
+                        <a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">{{ teacher.full_name }}</a>
                     </td>
                     <td>{{ teacher.last_update }}</td>
-                    <td><a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">[Edit]</a></td>
                     <td><a href="{% url 'academy_admin:delete_teacher' teacher.pk %}">[Delete]</a></td>
                 </tr>
             {% endfor %}

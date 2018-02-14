@@ -15,7 +15,6 @@
                 <td>{{ city.last_update }}</td>
                 <td><a href="{% url 'academy_admin:index' %}">[+ Add lesson]</a></td>
                 <td><a href="{% url 'academy_admin:index' %}">[+ Add theme]</a></td>
-                <td><a href="{% url 'academy_admin:index' %}">[Edit]</a></td>
                 <td><a href="{% url 'academy_admin:delete_city' city.pk %}">[Delete]</a></td>
             </tr>
         {% endfor %}

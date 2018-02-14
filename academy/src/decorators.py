@@ -15,7 +15,7 @@ def site_user_login_required(function=None, redirect_field_name=settings.REDIREC
 
 def admin_user_login_required(function=None, redirect_field_name=settings.REDIRECT_FIELD_NAME, login_url=None):
     actual_decorator = user_passes_test(
-        lambda u: u.is_authenticated and (u.is_superuser or u.is_staff),
+        lambda u: u.is_authenticated and (u.is_superuser or u.is_staff or u.is_admin),
         login_url=login_url,
         redirect_field_name=redirect_field_name
     )

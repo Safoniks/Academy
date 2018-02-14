@@ -19,7 +19,7 @@ from backend import login, logout
 from decorators import site_user_login_required, anonymous_user_required
 from utils import send_confirmation_email, generate_confirmation_code
 
-from .models import City, Theme, Course, Teacher
+from .models import City, Theme, Course, AdminProfile
 AuthUser = get_user_model()
 
 
@@ -201,7 +201,7 @@ def city_detail(request, city_slug):
         'signup_form': SignUpForm(),
         'signin_form': SignInForm(),
         'city': city,
-        'teachers': Teacher.objects.filter(auth_user__city=city),
+        'teachers': AuthUser.objects.teachers(city=city),
         'contact_us_form': ContactUsForm(),
         'reset_password_form': ResetPasswordForm(),
     }

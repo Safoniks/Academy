@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 from django.template.defaultfilters import slugify
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -26,34 +27,49 @@ class AuthUserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         if password:
             user.set_password(password)
-        else:
-            user.set_unusable_password()
         user.save()
         return user
 
-    def create_admin(self, email, password, **extra_fields):
+    def create_admin(self, email, password, profile_data=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_admin', True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Admin must have is_staff=True.')
+        if extra_fields.get('is_admin') is not True:
+            raise ValueError('Admin must have is_admin=True.')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Admin must have is_superuser=True.')
-        return self._create_user(email, password, **extra_fields)
+        auth_user = self._create_user(email, password, **extra_fields)
+        profile_data = profile_data if profile_data else {}
+        AdminProfile(auth_user=auth_user, **profile_data).save()
+        return auth_user
 
-    def create_teacher(self, email, password, profile_data, **extra_fields):
+    def create_moderator(self, email, password, profile_data=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_admin', True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Teacher must have is_staff=True.')
-        auth_teacher = self._create_user(email, password, **extra_fields)
+        if extra_fields.get('is_admin') is not True:
+            raise ValueError('Admin must have is_admin=True.')
+        auth_user = self._create_user(email, password, **extra_fields)
         profile_data = profile_data if profile_data else {}
-        Teacher(auth_user=auth_teacher, **profile_data).save()
-        return auth_teacher
+        AdminProfile(auth_user=auth_user, **profile_data).save()
+        return auth_user
 
-    def create_site_user(self, email, password, profile_data, **extra_fields):
+    def create_teacher(self, email, password, profile_data=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Teacher must have is_staff=True.')
+        auth_user = self._create_user(email, password, **extra_fields)
+        profile_data = profile_data if profile_data else {}
+        AdminProfile(auth_user=auth_user, **profile_data).save()
+        return auth_user
+
+    def create_site_user(self, email, password, profile_data=None, **extra_fields):
         extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is True:
@@ -66,11 +82,15 @@ class AuthUserManager(BaseUserManager):
         return auth_user
 
     def admins(self, city=None):
-        admin_queryset = self.filter(is_staff=True, is_superuser=True, is_active=True)
+        admin_queryset = self.filter(Q(is_admin=True) | Q(is_superuser=True))
         return admin_queryset.filter(city=city) if city else admin_queryset
 
+    def teachers(self, city=None):
+        teachers_queryset = self.filter(is_staff=True)
+        return teachers_queryset.filter(city=city) if city else teachers_queryset
+
     def site_users(self):
-        return self.filter(is_staff=False, is_superuser=False, is_active=True)
+        return self.filter(is_staff=False, is_admin=False, is_superuser=False)
 
 
 def get_user_photo_path(*args):
@@ -84,8 +104,8 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
     photo = models.ImageField(upload_to=get_user_photo_path, null=True, blank=True)
     join_date = models.DateTimeField(auto_now_add=True)
     is_staff = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False, blank=True)
     is_superuser = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
     city = models.ForeignKey('City', on_delete=models.CASCADE, null=True, blank=True)
     USERNAME_FIELD = 'email'
     objects = AuthUserManager()
@@ -128,37 +148,26 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_site_user(self):
-        return hasattr(self, 'site_user') or self.is_staff is False and (
-            self.is_superuser is False and self.is_active)
-
-    @property
-    def is_site_guest(self):
-        return hasattr(self, 'site_user') or self.is_staff is False and (
-            self.is_superuser is False and not self.is_active)
+        return hasattr(self, 'site_user') and not self.is_staff and (
+            not self.is_superuser and not self.is_admin)
 
     @property
     def is_teacher(self):
-        return self.is_staff is True and self.is_superuser is False and self.teacher
+        return not self.is_superuser and not self.is_admin and self.is_staff and hasattr(self, 'admin_profile')
 
     @property
-    def is_city_admin(self):
-        return self.is_superuser is True and self.city
+    def is_moderator(self):
+        return not self.is_superuser and self.is_admin and hasattr(self, 'admin_profile')
 
     @property
-    def is_teacher_city_admin(self):
-        return self.is_city_admin and self.teacher
-
-    @property
-    def is_admin(self):
-        return self.is_superuser is True and not self.city
+    def is_administrator(self):
+        return self.is_superuser and hasattr(self, 'admin_profile')
 
     def get_role(self):
         roles_dict = {
-            'is_admin': ADMIN,
-            'is_teacher_city_admin': TEACHER_CITY_ADMIN,
-            'is_city_admin': CITY_ADMIN,
+            'is_administrator': ADMINISTRATOR,
+            'is_moderator': MODERATOR,
             'is_teacher': TEACHER,
-            'is_site_guest': SITE_GUEST,
             'is_site_user': SITE_USER,
         }
         for prop, value in roles_dict.items():
@@ -173,6 +182,7 @@ class SiteUser(models.Model):
     country = models.CharField(null=True, blank=True, max_length=50)
     city = models.CharField(null=True, blank=True, max_length=50)
     address = models.CharField(null=True, blank=True, max_length=50)
+    mother_language = models.CharField(null=True, blank=True, max_length=50)
     postcode = models.IntegerField(null=True, blank=True)
     is_confirmed = models.BooleanField(default=False)
     confirmation_code = models.CharField(max_length=64)
@@ -185,18 +195,19 @@ class SiteUser(models.Model):
         verbose_name_plural = 'site users'
 
 
-class Teacher(models.Model):
+class AdminProfile(models.Model):
     auth_user = models.OneToOneField('AuthUser', on_delete=models.CASCADE)
     facebook_link = models.URLField(null=True, blank=True)
     instagram_link = models.URLField(null=True, blank=True)
     other_link = models.URLField(null=True, blank=True)
+    phone = models.CharField(null=True, blank=True, max_length=20)
     bio = models.TextField(null=True, blank=True)
     last_update = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'teacher'
-        verbose_name = 'teacher'
-        verbose_name_plural = 'teachers'
+        db_table = 'admin_profile'
+        verbose_name = 'admin profile'
+        verbose_name_plural = 'admin profiles'
 
     def save(self, *args, **kwargs):
         self.last_update = timezone.now()
@@ -211,6 +222,7 @@ class Partner(models.Model):
     name = models.CharField(max_length=20)
     link = models.URLField()
     logo = models.ImageField(upload_to=get_partner_logo_path)
+    is_general = models.BooleanField()
     last_update = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -244,11 +256,12 @@ def get_city_photo_path(*args):
 class City(models.Model):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(blank=True, unique=True)
-    description = models.TextField(null=True, blank=True)
+    short_description = models.TextField()
+    full_description = models.TextField()
     email = models.EmailField()
     phone = models.CharField(max_length=20)
-    photo = models.ImageField(upload_to=get_city_photo_path, null=True, blank=True)
-    school_address = models.CharField(max_length=100)
+    photo = models.ImageField(upload_to=get_city_photo_path)
+    location = models.CharField(max_length=100)
     last_update = models.DateTimeField(auto_now_add=True)
     partners = models.ManyToManyField('Partner')
 
@@ -289,7 +302,6 @@ class Theme(models.Model):
     photo = models.ImageField(upload_to=get_theme_photo_path, null=True, blank=True)
     city = models.ForeignKey('City', on_delete=models.CASCADE)
     last_update = models.DateTimeField(auto_now_add=True)
-    partners = models.ManyToManyField('Partner')
 
     class Meta:
         db_table = 'theme'
@@ -325,10 +337,10 @@ def get_course_photo_path(*args):
 class Course(models.Model):
     name = models.CharField(max_length=50)
     slug = models.SlugField(blank=True)
-    description = models.TextField(null=True, blank=True)
-    practise_info = models.TextField(null=True, blank=True)
+    description = models.TextField()
+    practise_info = models.TextField()
     location = models.CharField(max_length=100)
-    photo = models.ImageField(upload_to=get_course_photo_path, null=True, blank=True)
+    photo = models.ImageField(upload_to=get_course_photo_path)
     price = models.DecimalField(decimal_places=2, max_digits=10, default=0)
     price_description = models.CharField(max_length=100, null=True, blank=True)
     seats = models.IntegerField(validators=[positive_number])
@@ -337,7 +349,7 @@ class Course(models.Model):
 
     theme = models.ForeignKey('Theme', on_delete=models.CASCADE)
     partners = models.ManyToManyField('Partner')
-    teachers = models.ManyToManyField('Teacher')
+    teachers = models.ManyToManyField('AdminProfile')
 
     class Meta:
         db_table = 'course'
@@ -378,7 +390,6 @@ class Lesson(models.Model):
 class UserCourse(models.Model):
     user = models.ForeignKey('SiteUser', on_delete=models.CASCADE)
     course = models.ForeignKey('Course', on_delete=models.CASCADE)
-    mother_language = models.CharField(max_length=100, null=True, blank=True)
     know_academy_through = models.CharField(max_length=100, null=True, blank=True)
     questions = models.CharField(max_length=100, null=True, blank=True)
     rate = models.IntegerField(default=0)

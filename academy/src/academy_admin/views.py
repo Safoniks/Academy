@@ -16,7 +16,7 @@ from .forms import (
 from backend import login, logout
 from decorators import admin_user_login_required, anonymous_user_required
 
-from academy_site.models import City, Partner, Teacher, Theme, Course
+from academy_site.models import City, Partner, AdminProfile, Theme, Course
 
 AuthUser = get_user_model()
 
@@ -98,7 +98,7 @@ def city_detail(request, pk):
     context = {
         'user': request.user,
         'city': city,
-        'teachers': Teacher.objects.filter(auth_user__city=city),
+        'teachers': AuthUser.objects.teachers(city=city),
         'update_city_form': form,
     }
     return render(request, 'academy_admin/city_detail.html', context)
@@ -180,7 +180,7 @@ def delete_partner(request, pk):
 
 @admin_user_login_required(login_url='academy_admin:login')
 def teachers(request):
-    all_teachers = Teacher.objects.all()
+    all_teachers = AuthUser.objects.teachers()
     context = {
         'user': request.user,
         'teachers': all_teachers,
@@ -208,7 +208,7 @@ def add_teacher(request):
 @admin_user_login_required(login_url='academy_admin:login')
 def teacher_detail(request, pk):
     try:
-        teacher = Teacher.objects.get(pk=pk)
+        teacher = AuthUser.objects.get(pk=pk)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -231,7 +231,7 @@ def teacher_detail(request, pk):
 @admin_user_login_required(login_url='academy_admin:login')
 def delete_teacher(request, pk):
     try:
-        teacher = Teacher.objects.get(pk=pk)
+        teacher = AuthUser.objects.get(pk=pk)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -371,7 +371,7 @@ def add_course(request):
             selected_city = all_cities.first()
 
         city_themes = selected_city.theme_set.all()
-        city_teachers = Teacher.objects.filter(auth_user__city=selected_city)
+        city_teachers = AuthUser.objects.teachers(city=selected_city)
         city_partners = selected_city.partners.all()
         form_selects = {
             'themes': city_themes,
