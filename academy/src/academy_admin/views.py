@@ -1,27 +1,35 @@
 from django.contrib.auth import authenticate, get_user_model
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, resolve_url
 from django.conf import settings
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import (
     LoginForm,
     CityForm,
     PartnerForm,
-    TeacherForm,
     ThemeForm,
-    AddCourseForm,
-    SecurityForm,
+    CourseForm,
+    CreateBackOfficeUserForm,
+    EditBackOfficeUserForm,
+    ProfileForm,
+    ChangePassword,
 )
 from backend import login, logout
-from decorators import admin_user_login_required, anonymous_user_required
+from decorators import (
+    anonymous_required,
+    staff_user_login_required,
+    moderator_required,
+    superuser_required,
+)
 
 from academy_site.models import City, Partner, AdminProfile, Theme, Course
+from academy_site.choices import *
 
 AuthUser = get_user_model()
 
 
-@anonymous_user_required(login_url='academy_admin:index')
+@anonymous_required
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -31,7 +39,7 @@ def login_view(request):
             user = authenticate(request, email=email, password=password)
             if user:
                 login(request, user)
-                redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin/index.html')
+                redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, user.get_default_page())
                 return redirect(redirect_to)
             else:
                 form = LoginForm()
@@ -44,24 +52,39 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('academy_admin:index')
+    return redirect('academy_admin:login')
 
 
-@admin_user_login_required(login_url='academy_admin:login')
-def index(request):
+@staff_user_login_required(login_url='academy_admin:login')
+def change_password(request):
+    user = request.user
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, user.get_default_page())
+    if request.method == 'POST':
+        form = ChangePassword(request.POST, user=user)
+        if form.is_valid():
+            form.save()
+        return redirect(redirect_to)
+    else:
+        raise Http404
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@superuser_required
+def homepage(request):
     context = {
         'user': request.user
     }
-    return render(request, 'academy_admin/index.html', context)
+    return render(request, 'academy_admin/homepage.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@superuser_required
 def add_city(request):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
     if request.method == 'POST':
         add_city_form = CityForm(request.POST, request.FILES)
         if add_city_form.is_valid():
             add_city_form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
             return redirect(redirect_to)
     else:
         add_city_form = CityForm()
@@ -72,22 +95,30 @@ def add_city(request):
     return render(request, 'academy_admin/add_city.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
 def cities(request):
-    all_cities = City.objects.all()
+    user = request.user
+    cities_qs = City.objects.all()
+    if not user.is_administrator:
+        cities_qs = cities_qs.filter(authuser=user)
     context = {
-        'user': request.user,
-        'cities': all_cities,
+        'user': user,
+        'cities': cities_qs,
     }
     return render(request, 'academy_admin/cities.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
 def city_detail(request, pk):
-    try:
-        city = City.objects.get(pk=pk)
-    except ObjectDoesNotExist:
-        raise Http404
+    user = request.user
+    city_qs = City.objects.filter(pk=pk)
+    if not user.is_administrator:
+        city_qs = city_qs.filter(authuser=user)
+    city = city_qs.first()
+    if not city:
+        return HttpResponseForbidden()
 
     if request.method == 'POST':
         form = CityForm(request.POST, request.FILES, city=city)
@@ -96,7 +127,7 @@ def city_detail(request, pk):
     else:
         form = CityForm(city=city)
     context = {
-        'user': request.user,
+        'user': user,
         'city': city,
         'teachers': AuthUser.objects.teachers(city=city),
         'update_city_form': form,
@@ -104,150 +135,32 @@ def city_detail(request, pk):
     return render(request, 'academy_admin/city_detail.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@superuser_required
 def delete_city(request, pk):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
     try:
         city = City.objects.get(pk=pk)
     except ObjectDoesNotExist:
         raise Http404
 
     city.delete()
-    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:cities')
     return redirect(redirect_to)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
-def partners(request):
-    all_partners = Partner.objects.all()
-    context = {
-        'user': request.user,
-        'partners': all_partners,
-    }
-    return render(request, 'academy_admin/partners.html', context)
-
-
-@admin_user_login_required(login_url='academy_admin:login')
-def add_partner(request):
-    if request.method == 'POST':
-        form = PartnerForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
-            return redirect(redirect_to)
-    else:
-        form = PartnerForm()
-    context = {
-        'user': request.user,
-        'add_partner_form': form,
-    }
-    return render(request, 'academy_admin/add_partner.html', context)
-
-
-@admin_user_login_required(login_url='academy_admin:login')
-def partner_detail(request, pk):
-    try:
-        partner = Partner.objects.get(pk=pk)
-    except ObjectDoesNotExist:
-        raise Http404
-
-    if request.method == 'POST':
-        form = PartnerForm(request.POST, request.FILES, partner=partner)
-        if form.is_valid():
-            form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
-            return redirect(redirect_to)
-    else:
-        form = PartnerForm(partner=partner)
-    context = {
-        'user': request.user,
-        'partner': partner,
-        'update_partner_form': form,
-    }
-    return render(request, 'academy_admin/partner_detail.html', context)
-
-
-@admin_user_login_required(login_url='academy_admin:login')
-def delete_partner(request, pk):
-    try:
-        partner = Partner.objects.get(pk=pk)
-    except ObjectDoesNotExist:
-        raise Http404
-
-    partner.delete()
-    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
-    return redirect(redirect_to)
-
-
-@admin_user_login_required(login_url='academy_admin:login')
-def teachers(request):
-    all_teachers = AuthUser.objects.teachers()
-    context = {
-        'user': request.user,
-        'teachers': all_teachers,
-    }
-    return render(request, 'academy_admin/teachers.html', context)
-
-
-@admin_user_login_required(login_url='academy_admin:login')
-def add_teacher(request):
-    if request.method == 'POST':
-        form = TeacherForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
-            return redirect(redirect_to)
-    else:
-        form = TeacherForm()
-    context = {
-        'user': request.user,
-        'add_teacher_form': form,
-    }
-    return render(request, 'academy_admin/add_teacher.html', context)
-
-
-@admin_user_login_required(login_url='academy_admin:login')
-def teacher_detail(request, pk):
-    try:
-        teacher = AuthUser.objects.get(pk=pk)
-    except ObjectDoesNotExist:
-        raise Http404
-
-    if request.method == 'POST':
-        form = TeacherForm(request.POST, request.FILES, teacher=teacher)
-        if form.is_valid():
-            form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
-            return redirect(redirect_to)
-    else:
-        form = TeacherForm(teacher=teacher)
-    context = {
-        'user': request.user,
-        'teacher': teacher,
-        'update_teacher_form': form,
-    }
-    return render(request, 'academy_admin/teacher_detail.html', context)
-
-
-@admin_user_login_required(login_url='academy_admin:login')
-def delete_teacher(request, pk):
-    try:
-        teacher = AuthUser.objects.get(pk=pk)
-    except ObjectDoesNotExist:
-        raise Http404
-
-    teacher.auth_user.delete()
-    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
-    return redirect(redirect_to)
-
-
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
 def themes(request):
-    selected_city_slug = request.GET.get('city', None)
+    user = request.user
+    selected_city_pk = request.GET.get('city', None)
+
+    if not selected_city_pk or user.is_moderator:
+        selected_city_pk = getattr(user.city, 'pk', None)
 
     all_cities = City.objects.all()
     try:
-        if selected_city_slug:
-            selected_city = all_cities.get(slug=selected_city_slug)
+        if selected_city_pk:
+            selected_city = all_cities.get(pk=selected_city_pk)
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist:
@@ -255,7 +168,7 @@ def themes(request):
 
     city_themes = Theme.objects.filter(city=selected_city)
     context = {
-        'user': request.user,
+        'user': user,
         'themes': city_themes,
         'cities': all_cities,
         'selected_city': selected_city,
@@ -263,67 +176,91 @@ def themes(request):
     return render(request, 'academy_admin/themes.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
 def add_theme(request):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
+    user = request.user
+
+    selected_city_pk = request.GET.get('city', None)
+    try:
+        selected_city = City.objects.get(pk=selected_city_pk)
+    except ObjectDoesNotExist:
+        selected_city = None
+
     if request.method == 'POST':
-        form = ThemeForm(request.POST, request.FILES)
+        form = ThemeForm(request.POST, request.FILES, user=user, city=selected_city)
         if form.is_valid():
             form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
             return redirect(redirect_to)
     else:
-        form = ThemeForm()
+        form = ThemeForm(user=user, city=selected_city)
     context = {
-        'user': request.user,
+        'user': user,
         'add_theme_form': form,
     }
     return render(request, 'academy_admin/add_theme.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
 def theme_detail(request, pk):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
+    user = request.user
     try:
         theme = Theme.objects.get(pk=pk)
     except ObjectDoesNotExist:
         raise Http404
 
+    if user.is_moderator and user.city != theme.city:
+        return HttpResponseForbidden()
+
     if request.method == 'POST':
-        form = ThemeForm(request.POST, request.FILES, theme=theme)
+        form = ThemeForm(request.POST, request.FILES, user=user, theme=theme)
         if form.is_valid():
             form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
             return redirect(redirect_to)
     else:
-        form = ThemeForm(theme=theme)
+        form = ThemeForm(user=user, theme=theme)
     context = {
-        'user': request.user,
+        'user': user,
         'theme': theme,
         'update_theme_form': form,
     }
     return render(request, 'academy_admin/theme_detail.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
 def delete_theme(request, pk):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
+    user = request.user
     try:
         theme = Theme.objects.get(pk=pk)
     except ObjectDoesNotExist:
         raise Http404
 
+    if user.is_moderator and user.city != theme.city:
+        return HttpResponseForbidden()
+
     theme.delete()
-    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:themes')
     return redirect(redirect_to)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
 def courses(request):
-    selected_city_slug = request.GET.get('city', None)
-    selected_theme_slug = request.GET.get('theme', None)
+    user = request.user
+    selected_city_pk = request.GET.get('city', None)
+    selected_theme_pk = request.GET.get('theme', None)
+    selected_status = request.GET.get('status', None)
+
+    if not selected_city_pk or not user.is_administrator:
+        selected_city_pk = getattr(user.city, 'pk', None)
 
     all_cities = City.objects.all()
     try:
-        if selected_city_slug:
-            selected_city = all_cities.get(slug=selected_city_slug)
+        if selected_city_pk:
+            selected_city = all_cities.get(pk=selected_city_pk)
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist:
@@ -331,40 +268,51 @@ def courses(request):
 
     city_themes = Theme.objects.filter(city=selected_city)
     try:
-        if selected_theme_slug:
-            selected_theme = city_themes.get(slug=selected_theme_slug)
+        if selected_theme_pk:
+            selected_theme = city_themes.get(pk=selected_theme_pk)
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist:
         selected_theme = city_themes.first()
 
     theme_courses = Course.objects.filter(theme=selected_theme)
+    if selected_status:
+        theme_courses = theme_courses.filter(status=selected_status)
+    my_courses = Course.objects.all()
     context = {
-        'user': request.user,
+        'user': user,
         'courses': theme_courses,
+        'my_courses': my_courses,
+        'status_choices': (status[0] for status in STATUS_CHOICES),
         'cities': all_cities,
         'themes': city_themes,
+        'selected_status': selected_status,
         'selected_city': selected_city,
         'selected_theme': selected_theme,
     }
     return render(request, 'academy_admin/courses.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
 def add_course(request):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:courses')
+    user = request.user
     if request.method == 'POST':
-        form = AddCourseForm(request.POST, request.FILES)
+        form = CourseForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:courses')
             return redirect(redirect_to)
     else:
-        selected_city_slug = request.GET.get('city', None)
+        selected_city_pk = request.GET.get('city', None)
+
+        if not selected_city_pk or user.is_moderator:
+            selected_city_pk = getattr(user.city, 'pk', None)
 
         all_cities = City.objects.all()
         try:
-            if selected_city_slug:
-                selected_city = all_cities.get(slug=selected_city_slug)
+            if selected_city_pk:
+                selected_city = all_cities.get(pk=selected_city_pk)
             else:
                 raise ObjectDoesNotExist
         except ObjectDoesNotExist:
@@ -379,9 +327,15 @@ def add_course(request):
             'partners': city_partners,
         }
 
-        form = AddCourseForm(**form_selects)
+        selected_theme_pk = request.GET.get('theme', None)
+        try:
+            selected_theme = city_themes.get(pk=selected_theme_pk)
+        except ObjectDoesNotExist:
+            selected_theme = None
+
+        form = CourseForm(selected_theme=selected_theme, **form_selects)
         context = {
-            'user': request.user,
+            'user': user,
             'cities': all_cities,
             'selected_city': selected_city,
             'add_course_form': form,
@@ -389,19 +343,247 @@ def add_course(request):
         return render(request, 'academy_admin/add_course.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
-def delete_course(request, pk):
+@staff_user_login_required(login_url='academy_admin:login')
+def course_detail(request, pk):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:courses')
+    user = request.user
     try:
         course = Course.objects.get(pk=pk)
     except ObjectDoesNotExist:
         raise Http404
 
-    course.delete()
+    if not user.is_administrator and user not in course.teachers.all() and user.city != course.theme.city:
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        form = PartnerForm(request.POST, request.FILES, user=user, partner=partner)
+        if form.is_valid():
+            form.save()
+            return redirect(redirect_to)
+    else:
+        form = PartnerForm(user=user, partner=partner)
+    context = {
+        'user': user,
+        'course': course,
+        'update_course_form': form,
+    }
+    return render(request, 'academy_admin/course_detail.html', context)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def delete_course(request, pk):
     redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:courses')
+    user = request.user
+    try:
+        course = Course.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if user.is_moderator and user.city != course.theme.city:
+        return HttpResponseForbidden()
+
+    course.delete()
     return redirect(redirect_to)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def partners(request):
+    user = request.user
+    context = {}
+    selected_city_pk = request.GET.get('city', None)
+    is_main = request.GET.get('main', None) is not None
+    if is_main and user.is_administrator:
+        all_partners = Partner.objects.filter(is_general=True)
+    else:
+        if not selected_city_pk or user.is_moderator:
+            selected_city_pk = getattr(user.city, 'pk', None)
+
+        all_cities = City.objects.all()
+        try:
+            if selected_city_pk:
+                selected_city = all_cities.get(pk=selected_city_pk)
+            else:
+                raise ObjectDoesNotExist
+        except ObjectDoesNotExist:
+            selected_city = all_cities.first()
+
+        all_partners = Partner.objects.filter(city=selected_city)
+        context.update({
+            'cities': all_cities,
+            'selected_city': selected_city,
+        })
+    context.update({
+        'user': request.user,
+        'partners': all_partners,
+        'is_main': is_main,
+    })
+    return render(request, 'academy_admin/partners.html', context)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def add_partner(request):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
+    user = request.user
+
+    selected_city_pk = request.GET.get('city', None)
+    try:
+        selected_city = City.objects.get(pk=selected_city_pk)
+    except ObjectDoesNotExist:
+        selected_city = None
+
+    if request.method == 'POST':
+        form = PartnerForm(request.POST, request.FILES, user=user, city=selected_city)
+        if form.is_valid():
+            form.save()
+            return redirect(redirect_to)
+    else:
+        form = PartnerForm(user=user, city=selected_city)
+    context = {
+        'user': user,
+        'add_partner_form': form,
+    }
+    return render(request, 'academy_admin/add_partner.html', context)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def partner_detail(request, pk):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
+    user = request.user
+    try:
+        partner = Partner.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if user.is_moderator and user.city not in partner.city_set.all():
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        form = PartnerForm(request.POST, request.FILES, user=user, partner=partner)
+        if form.is_valid():
+            form.save()
+            return redirect(redirect_to)
+    else:
+        form = PartnerForm(user=user, partner=partner)
+    context = {
+        'user': request.user,
+        'partner': partner,
+        'update_partner_form': form,
+    }
+    return render(request, 'academy_admin/partner_detail.html', context)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def delete_partner(request, pk):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:partners')
+    user = request.user
+
+    selected_city_pk = request.GET.get('city', None)
+    try:
+        selected_city = City.objects.get(pk=selected_city_pk)
+    except ObjectDoesNotExist:
+        selected_city = None
+
+    try:
+        partner = Partner.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    partner_cities = partner.city_set.all()
+    if user.is_moderator:
+        if user.city not in partner_cities:
+            return HttpResponseForbidden()
+        else:
+            selected_city = user.city
+
+    if selected_city:
+        if len(partner_cities) > 1 or partner.is_general:
+            partner.city_set.remove(selected_city)
+            return redirect(redirect_to)
+
+    partner.delete()
+    return redirect(redirect_to)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def teachers(request):
+    user = request.user
+    selected_city_pk = request.GET.get('city', None)
+    if not selected_city_pk or user.is_moderator:
+        selected_city_pk = getattr(user.city, 'pk', None)
+
+    all_cities = City.objects.all()
+    try:
+        if selected_city_pk:
+            selected_city = all_cities.get(pk=selected_city_pk)
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist:
+        selected_city = all_cities.first()
+
+    all_teachers = AuthUser.objects.teachers(city=selected_city)
+    context = {
+        'user': user,
+        'teachers': all_teachers,
+        'cities': all_cities,
+        'selected_city': selected_city,
+    }
+    return render(request, 'academy_admin/teachers.html', context)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def add_teacher(request):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
+    user = request.user
+
+    selected_city_pk = request.GET.get('city', None)
+    try:
+        selected_city = City.objects.get(pk=selected_city_pk)
+    except ObjectDoesNotExist:
+        selected_city = None
+
+    if request.method == 'POST':
+        form = CreateBackOfficeUserForm(request.POST, request.FILES, request=request, city=selected_city)
+        if form.is_valid():
+            form.save()
+            return redirect(redirect_to)
+    else:
+        form = CreateBackOfficeUserForm(request=request, city=selected_city)
+    context = {
+        'user': user,
+        'add_teacher_form': form,
+    }
+    return render(request, 'academy_admin/add_teacher.html', context)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def delete_teacher(request, pk):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
+    user = request.user
+    try:
+        teacher = AuthUser.objects.get(pk=pk)
+        if not teacher.is_teacher:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if (teacher == request.user) or (
+                user.is_moderator and user.city != teacher.city):
+        return HttpResponseForbidden()
+
+    teacher.delete()
+    return redirect(redirect_to)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@superuser_required
 def security(request):
     admins = AuthUser.objects.admins()
     context = {
@@ -411,16 +593,17 @@ def security(request):
     return render(request, 'academy_admin/security.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
+@staff_user_login_required(login_url='academy_admin:login')
+@superuser_required
 def add_security(request):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
     if request.method == 'POST':
-        form = SecurityForm(request.POST, request.FILES)
+        form = CreateBackOfficeUserForm(request.POST, request.FILES, request=request)
         if form.is_valid():
             form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
             return redirect(redirect_to)
     else:
-        form = SecurityForm()
+        form = CreateBackOfficeUserForm(request=request)
     context = {
         'user': request.user,
         'add_security_form': form,
@@ -428,36 +611,71 @@ def add_security(request):
     return render(request, 'academy_admin/add_security.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
-def security_detail(request, pk):
+@staff_user_login_required(login_url='academy_admin:login')
+@superuser_required
+def delete_security(request, pk):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
     try:
-        admin = AuthUser.objects.get(pk=pk)
+        user = AuthUser.objects.get(pk=pk)
+        if not (user.is_superuser or user.is_admin):
+            raise ObjectDoesNotExist
     except ObjectDoesNotExist:
         raise Http404
 
-    if request.method == 'POST':
-        form = SecurityForm(request.POST, request.FILES, admin=admin)
+    if user == request.user:
+        return HttpResponseForbidden()
+
+    user.delete()
+    return redirect(redirect_to)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def user_detail(request, pk):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:teachers')
+    user = request.user
+    try:
+        back_office_user = AuthUser.objects.get(pk=pk)
+        if not back_office_user.is_staff:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if user.is_moderator and user.city != back_office_user.city:
+        return HttpResponseForbidden()
+
+    if request.method == 'POST' and user.is_administrator:
+        form = EditBackOfficeUserForm(request.POST, request.FILES, back_office_user=back_office_user)
         if form.is_valid():
             form.save()
-            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
             return redirect(redirect_to)
     else:
-        form = SecurityForm(admin=admin)
+        if user.is_moderator:
+            form = None
+        else:
+            form = EditBackOfficeUserForm(back_office_user=back_office_user)
     context = {
-        'user': request.user,
-        'admin': admin,
+        'user': user,
+        'back_office_user': back_office_user,
         'form': form,
     }
-    return render(request, 'academy_admin/security_detail.html', context)
+    return render(request, 'academy_admin/user_detail.html', context)
 
 
-@admin_user_login_required(login_url='academy_admin:login')
-def delete_security(request, pk):
-    try:
-        admin = AuthUser.objects.get(pk=pk)
-    except ObjectDoesNotExist:
-        raise Http404
-
-    admin.delete()
-    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:security')
-    return redirect(redirect_to)
+@staff_user_login_required(login_url='academy_admin:login')
+def user_profile(request):
+    user = request.user
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, user.get_default_page())
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, user=user)
+        if form.is_valid():
+            form.save()
+            return redirect(redirect_to)
+    else:
+        form = ProfileForm(user=user)
+    context = {
+        'user': user,
+        'profile_form': form,
+        'change_password_form': ChangePassword(),
+    }
+    return render(request, 'academy_admin/user_profile.html', context)

@@ -1,0 +1,18 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <h2>PROFILE</h2>
+    <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:user_profile' %}">
+        {% csrf_token %}
+        {{ profile_form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+
+        <p>Change password</p>
+        <form method="post" action="{% url 'academy_admin:change_password' %}">
+            {% csrf_token %}
+            {{ change_password_form.as_p }}
+            <button type="submit">Change</button>
+        </form>
+{% endblock %}

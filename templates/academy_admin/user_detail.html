@@ -1,0 +1,23 @@
+{% extends 'academy_admin/base_index.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block subcontent %}
+    <p>NAME: {{ back_office_user.full_name }}</p>
+    <p>EMAIL: {{ back_office_user.email }}</p>
+    <p>PHOTO: {{ back_office_user.photo }}</p>
+    <p>CITY: {{ back_office_user.city.name }}</p>
+    <p>ROLE: {{ back_office_user.get_role }}</p>
+    <p>PHONE: {{ back_office_user.adminprofile.phone }}</p>
+    <p>FACEBOOK LINK: {{ back_office_user.adminprofile.facebook_link }}</p>
+    <p>INSTAGRAM LINK: {{ back_office_user.adminprofile.instagram_link }}</p>
+    <p>OTHER LINK: {{ back_office_user.adminprofile.other_link }}</p>
+    <p>BIO: {{ back_office_user.adminprofile.bio }}</p>
+
+    {% if form %}
+        <form method="post" action="{% url 'academy_admin:user_detail' back_office_user.pk %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+    {% endif %}
+{% endblock %}

@@ -2,19 +2,26 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
 {% block subcontent %}
-    <h2>Teachers</h2>
+    <h2>TEACHERS</h2>
+
+    <div>CITY</div>
+    <select onchange="location = this.value;">
+        {% for city in cities %}
+            <option value="{% url 'academy_admin:teachers' %}?city={{ city.pk }}"
+            {% if city == selected_city %}selected{% endif %}>{{ city.name }}</option>
+        {% endfor %}
+    </select>
 
     <table style="margin-bottom: 50px;">
         <tr>
             <th>TEACHER</th>
             <th>LAST UPDATE</th>
         </tr>
-        {% for teacher in teachers %}
+        {% for auth_teacher in teachers %}
             <tr>
-                <td><a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">{{ teacher.auth_user.full_name }}</a></td>
-                <td>{{ teacher.last_update }}</td>
-                <td><a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">[Edit]</a></td>
-                <td><a href="{% url 'academy_admin:delete_teacher' teacher.pk %}">[Delete]</a></td>
+                <td><a href="{% url 'academy_admin:user_detail' auth_teacher.pk %}">{{ auth_teacher.full_name }}</a></td>
+                <td>{{ auth_teacher.adminprofile.last_update }}</td>
+                <td><a href="{% url 'academy_admin:delete_teacher' auth_teacher.pk %}">[Delete]</a></td>
             </tr>
         {% endfor %}
     </table>

@@ -2,38 +2,65 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
 {% block subcontent %}
-    <h2>Courses</h2>
+    {% if user.is_admin %}
+        <h2>Courses</h2>
 
-    <div>CITY</div>
-    <select onchange="location = this.value;">
-        {% for city in cities %}
-            <option value="{% url 'academy_admin:courses' %}?city={{ city.slug }}"
-            {% if city == selected_city %}selected{% endif %}>{{ city.name }}</option>
-        {% endfor %}
-    </select>
+        <div>CITY</div>
+        <select onchange="location = this.value;">
+            {% for city in cities %}
+                <option value="{% url 'academy_admin:courses' %}?city={{ city.pk }}{% if selected_status %}&status={{ selected_status }}{% endif %}"
+                        {% if city == selected_city %}selected{% endif %}>{{ city.name }}</option>
+            {% endfor %}
+        </select>
 
-    <div>THEME</div>
-    <select onchange="location = this.value;">
-        {% for theme in themes %}
-            <option value="{% url 'academy_admin:courses' %}?city={{ selected_city.slug }}&theme={{ theme.slug }}"
-            {% if theme == selected_theme %}selected{% endif %}>{{ theme.name }}</option>
-        {% endfor %}
-    </select>
+        <div>THEME</div>
+        <select onchange="location = this.value;">
+            {% for theme in themes %}
+                <option value="{% url 'academy_admin:courses' %}?city={{ selected_city.pk }}&theme={{ theme.pk }}{% if selected_status %}&status={{ selected_status }}{% endif %}"
+                        {% if theme == selected_theme %}selected{% endif %}>{{ theme.name }}</option>
+            {% endfor %}
+        </select>
 
+        <div>STATUS</div>
+        <select onchange="location = this.value;">
+            <option disabled selected> -- select an option --</option>
+            {% for status in status_choices %}
+                <option value="{% url 'academy_admin:courses' %}?city={{ selected_city.pk }}&theme={{ selected_theme.pk }}&status={{ status }}"
+                        {% if status == selected_status %}selected{% endif %}>{{ status }}</option>
+            {% endfor %}
+        </select>
+
+        <table style="margin: 50px 0;">
+            <tr>
+                <th>NAME</th>
+                <th>STATUS</th>
+            </tr>
+            {% for course in courses %}
+                <tr>
+                    <td><a href="{% url 'academy_admin:courses' %}">{{ course.name }}</a></td>
+                    <td>{{ course.status }}</td>
+                    <td><a href="{% url 'academy_admin:delete_course' course.pk %}">[Delete]</a></td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <a href="{% url 'academy_admin:add_course' %}">[+ADD COURSE]</a>
+    {% endif %}
+
+    <h2>MY COURSES</h2>
     <table style="margin: 50px 0;">
         <tr>
             <th>NAME</th>
             <th>STATUS</th>
         </tr>
-        {% for course in courses %}
+        {% for course in my_courses %}
             <tr>
                 <td><a href="{% url 'academy_admin:courses' %}">{{ course.name }}</a></td>
                 <td>{{ course.status }}</td>
-{#                <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">[Edit]</a></td>#}
-                <td><a href="{% url 'academy_admin:delete_course' course.pk %}">[Delete]</a></td>
+                {% if user.is_admin and user.city == course.theme.city %}
+                    <td><a href="{% url 'academy_admin:delete_course' course.pk %}">[Delete]</a></td>
+                {% endif %}
             </tr>
         {% endfor %}
     </table>
-
-    <a href="{% url 'academy_admin:add_course' %}">[+ADD COURSE]</a>
 {% endblock %}

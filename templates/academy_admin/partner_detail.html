@@ -2,6 +2,8 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
 {% block subcontent %}
+    <p></p>
+
     <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:partner_detail' partner.pk %}">
         {% csrf_token %}
         {{ update_partner_form.as_p }}

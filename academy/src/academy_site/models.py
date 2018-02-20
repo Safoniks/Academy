@@ -11,7 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
 from .validators import positive_number
-from .coices import *
+from .choices import *
 
 
 def get_image_path(instance, filename, dir_name):
@@ -98,6 +98,13 @@ def get_user_photo_path(*args):
 
 
 class AuthUser(AbstractBaseUser, PermissionsMixin):
+    RULES = {
+        ADMINISTRATOR: {'is_superuser': True, 'is_admin': True, 'is_staff': True},
+        MODERATOR: {'is_superuser': False, 'is_admin': True, 'is_staff': True},
+        TEACHER: {'is_superuser': False, 'is_admin': False, 'is_staff': True},
+        SITE_USER: {'is_superuser': False, 'is_admin': False, 'is_staff': False},
+    }
+
     first_name = models.CharField(max_length=50, null=True, blank=True)
     last_name = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(unique=True)
@@ -148,20 +155,37 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_site_user(self):
-        return hasattr(self, 'site_user') and not self.is_staff and (
-            not self.is_superuser and not self.is_admin)
+        for prop, value in self.RULES[SITE_USER].items():
+            if getattr(self, prop, False) != value:
+                return False
+        return True
 
     @property
     def is_teacher(self):
-        return not self.is_superuser and not self.is_admin and self.is_staff and hasattr(self, 'admin_profile')
+        for prop, value in self.RULES[TEACHER].items():
+            if getattr(self, prop, False) != value:
+                return False
+        return True
 
     @property
     def is_moderator(self):
-        return not self.is_superuser and self.is_admin and hasattr(self, 'admin_profile')
+        for prop, value in self.RULES[MODERATOR].items():
+            if getattr(self, prop, False) != value:
+                return False
+        return True
 
     @property
     def is_administrator(self):
-        return self.is_superuser and hasattr(self, 'admin_profile')
+        for prop, value in self.RULES[ADMINISTRATOR].items():
+            if getattr(self, prop, False) != value:
+                return False
+        return True
+
+    def set_role(self, role):
+        rules = self.RULES.get(role, None)
+        if rules:
+            for prop, value in rules.items():
+                setattr(self, prop, value)
 
     def get_role(self):
         roles_dict = {
@@ -174,6 +198,17 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
             if getattr(self, prop, False):
                 return value
 
+    def get_default_page(self):
+        default_pages_dict = {
+            'is_administrator': 'academy_admin:homepage',
+            'is_moderator': 'academy_admin:cities',
+            'is_teacher': 'academy_admin:courses',
+            'is_site_user': 'academy_site:home',
+        }
+        for prop, value in default_pages_dict.items():
+            if getattr(self, prop, False):
+                return value
+
 
 class SiteUser(models.Model):
     auth_user = models.OneToOneField('AuthUser', on_delete=models.CASCADE)
@@ -183,6 +218,7 @@ class SiteUser(models.Model):
     city = models.CharField(null=True, blank=True, max_length=50)
     address = models.CharField(null=True, blank=True, max_length=50)
     mother_language = models.CharField(null=True, blank=True, max_length=50)
+    salutation = models.CharField(null=True, blank=True, max_length=50)
     postcode = models.IntegerField(null=True, blank=True)
     is_confirmed = models.BooleanField(default=False)
     confirmation_code = models.CharField(max_length=64)
@@ -260,7 +296,8 @@ class City(models.Model):
     full_description = models.TextField()
     email = models.EmailField()
     phone = models.CharField(max_length=20)
-    photo = models.ImageField(upload_to=get_city_photo_path)
+    photo = models.ImageField(upload_to=get_city_photo_path, null=True, blank=True)
+    video = models.URLField(null=True, blank=True)
     location = models.CharField(max_length=100)
     last_update = models.DateTimeField(auto_now_add=True)
     partners = models.ManyToManyField('Partner')
@@ -349,7 +386,7 @@ class Course(models.Model):
 
     theme = models.ForeignKey('Theme', on_delete=models.CASCADE)
     partners = models.ManyToManyField('Partner')
-    teachers = models.ManyToManyField('AdminProfile')
+    teachers = models.ManyToManyField('AuthUser')
 
     class Meta:
         db_table = 'course'

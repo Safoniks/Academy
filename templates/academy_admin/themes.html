@@ -7,7 +7,7 @@
     <div>CITY</div>
     <select onchange="location = this.value;">
         {% for city in cities %}
-            <option value="{% url 'academy_admin:themes' %}?city={{ city.slug }}"
+            <option value="{% url 'academy_admin:themes' %}?city={{ city.pk }}"
             {% if city == selected_city %}selected{% endif %}>{{ city.name }}</option>
         {% endfor %}
     </select>
@@ -21,7 +21,7 @@
             <tr>
                 <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">{{ theme.name }}</a></td>
                 <td>{{ theme.last_update }}</td>
-                <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">[Edit]</a></td>
+                <td><a href="{% url 'academy_admin:add_course' %}?city={{ theme.city.pk }}&theme={{ theme.pk }}">[+ Add course]</a></td>
                 <td><a href="{% url 'academy_admin:delete_theme' theme.pk %}">[Delete]</a></td>
             </tr>
         {% endfor %}

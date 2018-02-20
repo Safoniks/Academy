@@ -16,7 +16,7 @@ from .forms import (
     ChangePassword,
 )
 from backend import login, logout
-from decorators import site_user_login_required, anonymous_user_required
+from decorators import site_user_login_required, anonymous_required
 from utils import send_confirmation_email, generate_confirmation_code
 
 from .models import City, Theme, Course, AdminProfile
@@ -37,7 +37,7 @@ def home(request):
     return render(request, 'academy_site/home.html', context)
 
 
-@anonymous_user_required(login_url='academy_site:home')
+@anonymous_required(redirect_url='academy_site:home')
 def signup(request):
     if request.method == 'POST':
         signup_form = SignUpForm(request.POST)
@@ -57,7 +57,7 @@ def signup(request):
         raise Http404
 
 
-@anonymous_user_required(login_url='academy_site:home')
+@anonymous_required(redirect_url='academy_site:home')
 def reset_password(request):
     if request.method == 'POST':
         form = ResetPasswordForm(request.POST)
@@ -125,7 +125,7 @@ def new_confirmation_code(request):
     return redirect(redirect_to)
 
 
-@anonymous_user_required(login_url='academy_site:home')
+@anonymous_required(redirect_url='academy_site:home')
 def signin(request):
     if request.method == 'POST':
         signin_form = SignInForm(request.POST)

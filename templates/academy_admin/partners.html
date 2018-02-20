@@ -2,7 +2,21 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
 {% block subcontent %}
-    <h2>Partners</h2>
+    <h2>PARTNERS</h2>
+    {% if user.is_administrator %}
+        <a href="{% url 'academy_admin:partners' %}?main">[MAIN]</a>
+        <a href="{% url 'academy_admin:partners' %}">[CITY FILTER]</a>
+    {% endif %}
+
+    {% if not is_main or not user.is_administrator %}
+        <div>CITY</div>
+        <select onchange="location = this.value;">
+            {% for city in cities %}
+                <option value="{% url 'academy_admin:partners' %}?city={{ city.pk }}"
+                        {% if city == selected_city %}selected{% endif %}>{{ city.name }}</option>
+            {% endfor %}
+        </select>
+    {% endif %}
 
     <table style="margin-bottom: 50px;">
         <tr>
@@ -13,7 +27,6 @@
             <tr>
                 <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">{{ partner.name }}</a></td>
                 <td>{{ partner.last_update }}</td>
-                <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">[Edit]</a></td>
                 <td><a href="{% url 'academy_admin:delete_partner' partner.pk %}">[Delete]</a></td>
             </tr>
         {% endfor %}

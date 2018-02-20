@@ -27,7 +27,7 @@
             {% endfor %}
         </table>
 
-        <a href="{% url 'academy_admin:add_theme' %}">[+ADD THEME]</a>
+        <a href="{% url 'academy_admin:add_theme' %}?city={{ city.pk }}">[+ADD THEME]</a>
     </div>
 
     <div>
@@ -42,12 +42,12 @@
                 <tr>
                     <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">{{ partner.name }}</a></td>
                     <td>{{ partner.last_update }}</td>
-                    <td><a href="{% url 'academy_admin:delete_partner' partner.pk %}">[Delete]</a></td>
+                    <td><a href="{% url 'academy_admin:delete_partner' partner.pk %}?city={{ city.pk }}">[Delete]</a></td>
                 </tr>
             {% endfor %}
         </table>
 
-        <a href="{% url 'academy_admin:add_partner' %}">[+ADD PARTNER]</a>
+        <a href="{% url 'academy_admin:add_partner' %}?city={{ city.pk }}">[+ADD PARTNER]</a>
     </div>
 
     <div>
@@ -61,14 +61,14 @@
             {% for teacher in teachers %}
                 <tr>
                     <td>
-                        <a href="{% url 'academy_admin:teacher_detail' teacher.pk %}">{{ teacher.full_name }}</a>
+                        <a href="{% url 'academy_admin:user_detail' teacher.pk %}">{{ teacher.full_name }}</a>
                     </td>
-                    <td>{{ teacher.last_update }}</td>
+                    <td>{{ teacher.adminprofile.last_update }}</td>
                     <td><a href="{% url 'academy_admin:delete_teacher' teacher.pk %}">[Delete]</a></td>
                 </tr>
             {% endfor %}
         </table>
 
-        <a href="{% url 'academy_admin:add_teacher' %}">[+ADD TEACHER]</a>
+        <a href="{% url 'academy_admin:add_teacher' %}?city={{ city.pk }}">[+ADD TEACHER]</a>
     </div>
 {% endblock %}
