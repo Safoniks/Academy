@@ -37,7 +37,7 @@
             </tr>
             {% for course in courses %}
                 <tr>
-                    <td><a href="{% url 'academy_admin:courses' %}">{{ course.name }}</a></td>
+                    <td><a href="{{ course.get_admin_url }}">{{ course.name }}</a></td>
                     <td>{{ course.status }}</td>
                     <td><a href="{% url 'academy_admin:delete_course' course.pk %}">[Delete]</a></td>
                 </tr>
@@ -55,7 +55,7 @@
         </tr>
         {% for course in my_courses %}
             <tr>
-                <td><a href="{% url 'academy_admin:courses' %}">{{ course.name }}</a></td>
+                <td><a href="{{ course.get_admin_url }}">{{ course.name }}</a></td>
                 <td>{{ course.status }}</td>
                 {% if user.is_admin and user.city == course.theme.city %}
                     <td><a href="{% url 'academy_admin:delete_course' course.pk %}">[Delete]</a></td>

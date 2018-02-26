@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from academy_site.models import City, Partner, AdminProfile, Theme, Course
+from academy_site.models import City, Partner, AdminProfile, Theme, Course, Lesson
 from academy_site.choices import *
 
 AuthUser = get_user_model()
@@ -13,14 +13,14 @@ class LoginForm(forms.Form):
     password = forms.CharField(required=True, max_length=20)
 
 
-class ChangePassword(forms.Form):
+class ChangePasswordForm(forms.Form):
     old_password = forms.CharField()
     new_password = forms.CharField()
     reenter_password = forms.CharField()
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
-        super(ChangePassword, self).__init__(*args, **kwargs)
+        super(ChangePasswordForm, self).__init__(*args, **kwargs)
         self.user = user
 
     def clean(self):
@@ -57,19 +57,18 @@ class CityForm(forms.Form):
     def __init__(self, *args, **kwargs):
         city = kwargs.pop('city', None)
         super(CityForm, self).__init__(*args, **kwargs)
+        self.city = city
         if city:
             self.fields.pop('name', None)
-            self.city = city
-            if not self.data:
-                self.initial.update({
-                    'short_description': city.short_description,
-                    'full_description': city.full_description,
-                    'location': city.location,
-                    'email': city.email,
-                    'phone': city.phone,
-                    'photo': city.photo,
-                    'video': city.video,
-                })
+            self.initial.update({
+                'short_description': city.short_description,
+                'full_description': city.full_description,
+                'location': city.location,
+                'email': city.email,
+                'phone': city.phone,
+                'photo': city.photo,
+                'video': city.video,
+            })
 
     def clean(self):
         form_data = self.cleaned_data
@@ -79,13 +78,18 @@ class CityForm(forms.Form):
         if (photo and video) or (not photo and not video):
             self._errors["photo"] = ["PHOTO OR VIDEO"]
             self._errors["video"] = ["PHOTO OR VIDEO"]
-
         return form_data
+
+    def clean_video(self):
+        video = self.cleaned_data['video']
+        if not video.startswith('https://www.youtube.com/embed/'):
+            raise ValidationError("Invalid video url.")
+        return video
 
     def save(self):
         data = self.cleaned_data
-        if hasattr(self, 'city'):
-            city = self.city
+        city = self.city
+        if city:
             for field in self.fields:
                 setattr(city, field, data[field])
         else:
@@ -105,15 +109,14 @@ class ThemeForm(forms.Form):
         theme = kwargs.pop('theme', None)
         super(ThemeForm, self).__init__(*args, **kwargs)
         self.user = user
+        self.theme = theme
         if theme:
             self.fields.pop('name', None)
             self.fields.pop('city', None)
-            self.theme = theme
-            if not self.data:
-                self.initial.update({
-                    'description': theme.description,
-                    'photo': theme.photo,
-                })
+            self.initial.update({
+                'description': theme.description,
+                'photo': theme.photo,
+            })
         else:
             if selected_city:
                 self.fields['city'].initial = selected_city
@@ -130,8 +133,8 @@ class ThemeForm(forms.Form):
 
     def save(self):
         data = self.cleaned_data
-        if hasattr(self, 'theme'):
-            theme = self.theme
+        theme = self.theme
+        if theme:
             for field in data:
                 setattr(theme, field, data[field])
         else:
@@ -157,32 +160,109 @@ class CourseForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        course = kwargs.pop('course', None)
         themes = kwargs.pop('themes', None)
         teachers = kwargs.pop('teachers', None)
         partners = kwargs.pop('partners', None)
         selected_theme = kwargs.pop('selected_theme', None)
         super(CourseForm, self).__init__(*args, **kwargs)
-        if themes:
-            self.fields['theme'].queryset = themes
-            if selected_theme:
-                self.fields['theme'].initial = selected_theme
-        if teachers:
-            self.fields['teachers'].queryset = teachers
-        if partners:
-            self.fields['partners'].queryset = partners
+        self.course, self.themes, self.teachers, self.partners = course, themes, teachers, partners
+        if course:
+            self.fields['status'] = forms.ChoiceField(choices=STATUS_CHOICES, widget=forms.Select())
+            self.initial.update({
+                'status': course.status,
+                'name': course.name,
+                'description': course.description,
+                'photo': course.photo,
+                'location': course.location,
+                'practise_info': course.practise_info,
+                'price': course.price,
+                'price_description': course.price_description,
+                'seats': course.seats,
+                'theme': course.theme,
+                'teachers': course.teachers.all(),
+                'partners': course.partners.all(),
+            })
+        self.fields['theme'].queryset = themes
+        if selected_theme:
+            self.fields['theme'].initial = selected_theme
+        self.fields['teachers'].queryset = teachers
+        self.fields['partners'].queryset = partners
+
+    def clean_theme(self):
+        theme = self.cleaned_data['theme']
+        themes = self.themes
+        if theme not in themes:
+            raise ValidationError('Need a theme from the same city.')
+        return theme
+
+    def clean_teachers(self):
+        teachers = self.cleaned_data['teachers']
+        for teacher in teachers:
+            if teacher not in self.teachers:
+                raise ValidationError('Need a teacher from the same city.')
+        return teachers
+
+    def clean_partners(self):
+        partners = self.cleaned_data['partners']
+        for partner in partners:
+            if partner not in self.partners:
+                raise ValidationError('Need a partner from the same city.')
+        return partners
+
+    def clean_seats(self):
+        seats = self.cleaned_data['seats']
+        course = self.course
+        if course and course.reserved_seats > seats:
+            raise ValidationError('Already booked %d seats.' % course.reserved_seats)
+        return seats
 
     def save(self):
         data = self.cleaned_data
-        if 'save_draft' in self.data:
-            data['status'] = PLANNED
-        else:
-            data['status'] = AVAILABLE
+        course = self.course
         teachers = data.pop('teachers', [])
         partners = data.pop('partners', [])
-        course = Course(**data)
+        if course:
+            for field in data:
+                setattr(course, field, data[field])
+        else:
+            if 'save_draft' in self.data:
+                data['status'] = PLANNED
+            else:
+                data['status'] = AVAILABLE
+            course = Course(**data)
         course.save()
+        course.teachers.clear()
         course.teachers.add(*teachers)
+        course.partners.clear()
         course.partners.add(*partners)
+
+
+class AddLessonForm(forms.Form):
+    date = forms.DateTimeField()
+    course = forms.ModelChoiceField(queryset=Course.objects.all(), widget=forms.HiddenInput())
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        course = kwargs.pop('course', None)
+        super(AddLessonForm, self).__init__(*args, **kwargs)
+        self.user = user
+        if course:
+            self.fields['course'].initial = course.pk
+
+    def clean(self):
+        form_data = self.cleaned_data
+        course = form_data['course']
+        user = self.user
+        if user.is_moderator and user.city != course.theme.city:
+            raise ValidationError("Moderator can not create a lesson in this course.")
+        return form_data
+
+    def save(self):
+        data = self.cleaned_data
+        lesson = Lesson(**data)
+        lesson.save()
+        return lesson
 
 
 class PartnerForm(forms.Form):
@@ -200,20 +280,19 @@ class PartnerForm(forms.Form):
         partner = kwargs.pop('partner', None)
         super(PartnerForm, self).__init__(*args, **kwargs)
         self.user = user
+        self.partner = partner
         if user.is_moderator:
             self.fields['is_general'].widget = forms.HiddenInput()
             self.fields['is_general'].required = False
             self.fields['cities'].widget = forms.MultipleHiddenInput()
         if partner:
-            self.partner = partner
-            if not self.data:
-                self.initial.update({
-                    'name': partner.name,
-                    'link': partner.link,
-                    'logo': partner.logo,
-                    'is_general': partner.is_general,
-                    'cities': partner.city_set.all(),
-                })
+            self.initial.update({
+                'name': partner.name,
+                'link': partner.link,
+                'logo': partner.logo,
+                'is_general': partner.is_general,
+                'cities': partner.city_set.all(),
+            })
         else:
             if selected_city:
                 self.fields['cities'].initial = (selected_city.pk, )
@@ -230,9 +309,9 @@ class PartnerForm(forms.Form):
 
     def save(self):
         data = self.cleaned_data
+        partner = self.partner
         cities = data.pop('cities', [])
-        if hasattr(self, 'partner'):
-            partner = self.partner
+        if partner:
             for field in data:
                 setattr(partner, field, data[field])
         else:
@@ -333,27 +412,25 @@ class ProfileForm(forms.Form):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super(ProfileForm, self).__init__(*args, **kwargs)
-
         if user:
             self.user = user
             if not user.is_administrator:
                 self.fields.pop('city', None)
-            if not self.data:
+            else:
                 self.initial.update({
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'email': user.email,
-                    'photo': user.photo,
-                    'phone': user.adminprofile.phone,
-                    'facebook_link': user.adminprofile.facebook_link,
-                    'instagram_link': user.adminprofile.instagram_link,
-                    'other_link': user.adminprofile.other_link,
-                    'bio': user.adminprofile.bio,
+                    'city': user.city,
                 })
-                if user.is_administrator:
-                    self.initial.update({
-                        'city': user.city,
-                    })
+            self.initial.update({
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'photo': user.photo,
+                'phone': user.adminprofile.phone,
+                'facebook_link': user.adminprofile.facebook_link,
+                'instagram_link': user.adminprofile.instagram_link,
+                'other_link': user.adminprofile.other_link,
+                'bio': user.adminprofile.bio,
+            })
 
     def save(self):
         data = self.cleaned_data

@@ -18,8 +18,9 @@ from .forms import (
 from backend import login, logout
 from decorators import site_user_login_required, anonymous_required
 from utils import send_confirmation_email, generate_confirmation_code
+from .choices import *
 
-from .models import City, Theme, Course, AdminProfile
+from .models import City, Theme, Course, SiteUser, UserCourse
 AuthUser = get_user_model()
 
 
@@ -31,7 +32,7 @@ def home(request):
         'cities': cities,
         'signup_form': SignUpForm(),
         'signin_form': SignInForm(),
-        'contact_us_form': ContactUsForm(),
+        'contact_us_form': ContactUsForm(email_to=settings.SITE_SETTINGS['contact_email']),
         'reset_password_form': ResetPasswordForm(),
     }
     return render(request, 'academy_site/home.html', context)
@@ -88,19 +89,29 @@ def change_password(request):
         raise Http404
 
 
-def email_confirm(request, user_id, code):
+def email_confirm(request, instance_id, code):
     activation_expired = False
     already_active = False
-    user = get_object_or_404(AuthUser, id=user_id, siteuser__confirmation_code=code)
-    if not user.siteuser.is_confirmed:
-        if timezone.now() > user.siteuser.confirmation_code_expires:
+    instance = SiteUser.objects.filter(id=instance_id, confirmation_code=code).first()
+    if not instance:
+        instance = UserCourse.objects.filter(id=instance_id, confirmation_code=code).first()
+        user = instance.user
+    else:
+        user = instance
+    if not instance:
+        raise Http404
+
+    if not instance.is_confirmed:
+        if timezone.now() > instance.confirmation_code_expires:
             activation_expired = True #Display: offer the user to send a new activation link
             messages.error(request, 'Лінка вже не дійсна')
         else:
-            user.siteuser.is_confirmed = True
-            user.siteuser.save()
+            instance.is_confirmed = True
+            user.save()
+            UserCourse.objects.filter(
+                user=user, is_confirmed=False, confirmation_code_expires__gt=timezone.now()
+            ).update(is_confirmed=True)
             messages.success(request, 'Email підтверджено')
-
     else:
         already_active = True #Display : error message
         messages.error(request, 'Вже підтвержено')
@@ -164,8 +175,10 @@ def contact_us(request):
 
 @site_user_login_required(login_url='academy_site:home')
 def profile(request):
+    user = request.user
     context = {
-        'user': request.user
+        'user': user,
+        'course_subscribes': user.siteuser.get_active_course_subscribes(),
     }
     return render(request, 'academy_site/profile.html', context)
 
@@ -202,7 +215,7 @@ def city_detail(request, city_slug):
         'signin_form': SignInForm(),
         'city': city,
         'teachers': AuthUser.objects.teachers(city=city),
-        'contact_us_form': ContactUsForm(),
+        'contact_us_form': ContactUsForm(email_to=city.email),
         'reset_password_form': ResetPasswordForm(),
     }
     return render(request, 'academy_site/city_detail.html', context)
@@ -214,28 +227,41 @@ def theme_detail(request, city_slug, theme_slug):
     except ObjectDoesNotExist:
         raise Http404
 
+    courses = Course.objects.filter(theme=theme, status=AVAILABLE)
     context = {
         'user': request.user,
         'signup_form': SignUpForm(),
         'signin_form': SignInForm(),
         'theme': theme,
+        'courses': courses,
         'reset_password_form': ResetPasswordForm(),
     }
     return render(request, 'academy_site/theme_detail.html', context)
 
 
 def course_detail(request, city_slug, theme_slug, course_slug):
+    user = request.user
     try:
-        course = Course.objects.get(theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug)
+        course = Course.objects.get(
+            theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug
+        )
     except ObjectDoesNotExist:
         raise Http404
 
+    subscribed = False
+    if user.is_authenticated:
+        subscribed = course in user.siteuser.get_active_courses()
+
+    if course.status != AVAILABLE and not subscribed:
+        raise Http404
+
     context = {
-        'user': request.user,
+        'user': user,
         'signup_form': SignUpForm(),
         'signin_form': SignInForm(),
         'course': course,
         'reset_password_form': ResetPasswordForm(),
+        'subscribed': subscribed,
     }
     return render(request, 'academy_site/course_detail.html', context)
 
@@ -243,13 +269,21 @@ def course_detail(request, city_slug, theme_slug, course_slug):
 def signup_course(request, city_slug, theme_slug, course_slug):
     user = request.user
     try:
-        course = Course.objects.get(theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug)
+        course = Course.objects.get(
+            theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug, status=AVAILABLE
+        )
     except ObjectDoesNotExist:
+        raise Http404
+    if course.is_sold_out or course.is_archived:
         raise Http404
     if request.method == 'POST':
         form = SignUpCourseForm(request.POST, request.FILES, user=user, course=course)
         if form.is_valid():
-            form.save()
+            user_course = form.save()
+            if user_course.user and user_course.user != user:
+                login(request, user_course.user.auth_user)
+            if not user_course.is_confirmed:
+                send_confirmation_email(user_course)
             redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:course_detail')
             return redirect(redirect_to, city_slug=city_slug, theme_slug=theme_slug, course_slug=course_slug)
     else:
@@ -263,3 +297,53 @@ def signup_course(request, city_slug, theme_slug, course_slug):
         'reset_password_form': ResetPasswordForm(),
     }
     return render(request, 'academy_site/signup_course.html', context)
+
+
+@site_user_login_required(login_url='academy_site:home')
+def unsubscribe_course(request, city_slug, theme_slug, course_slug):
+    user = request.user
+    try:
+        course = Course.objects.get(
+            theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug
+        )
+        course_subscribe = UserCourse.objects.active_entries().get(user=user.siteuser, course=course)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    course_subscribe.is_unsubscribed = True
+    course_subscribe.save()
+
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:course_detail')
+    return redirect(redirect_to, city_slug=city_slug, theme_slug=theme_slug, course_slug=course_slug)
+
+
+@site_user_login_required(login_url='academy_site:home')
+def like_course(request, city_slug, theme_slug, course_slug):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:profile')
+    user = request.user
+    try:
+        course = Course.objects.get(theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug)
+        course_subscribe = UserCourse.objects.active_entries().get(user=user.siteuser, course=course)
+    except ObjectDoesNotExist:
+        raise Http404
+    if not course_subscribe.is_liked:  # not liked
+        course_subscribe.vote = UserCourse.LIKE
+        course_subscribe.save()
+
+    return redirect(redirect_to)
+
+
+@site_user_login_required(login_url='academy_site:home')
+def dislike_course(request, city_slug, theme_slug, course_slug):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:profile')
+    user = request.user
+    try:
+        course = Course.objects.get(theme__city__slug=city_slug, theme__slug=theme_slug, slug=course_slug)
+        course_subscribe = UserCourse.objects.active_entries().get(user=user.siteuser, course=course)
+    except ObjectDoesNotExist:
+        raise Http404
+    if not course_subscribe.is_disliked:  # not disliked
+        course_subscribe.vote = UserCourse.DISLIKE
+        course_subscribe.save()
+
+    return redirect(redirect_to)

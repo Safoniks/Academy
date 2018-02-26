@@ -11,7 +11,7 @@
         </tr>
         {% for city in cities %}
             <tr>
-                <td><a href="{% url 'academy_admin:city_detail' city.pk %}">{{ city.name }}</a></td>
+                <td><a href="{{ city.get_admin_url }}">{{ city.name }}</a></td>
                 <td>{{ city.last_update }}</td>
                 <td><a href="{% url 'academy_admin:add_course' %}?city={{ city.pk }}">[+ Add course]</a></td>
                 <td><a href="{% url 'academy_admin:add_theme' %}?city={{ city.pk }}">[+ Add theme]</a></td>

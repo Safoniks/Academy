@@ -114,6 +114,7 @@ CONFIRMATION_EMAIL_SUBJECT = 'Confirm email'
 RESET_PASSWORD_SUBJECT = 'Reset password'
 
 SIGNUP_CONFIRMATION_CODE_EXPIRE = timedelta(days=1)
+SIGNUP_COURSE_CONFIRMATION_CODE_EXPIRE = timedelta(minutes=2)
 
 INITIAL_ADMIN = {
     'email': 'admin@admin.com',

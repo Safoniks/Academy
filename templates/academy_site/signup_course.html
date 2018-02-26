@@ -4,8 +4,7 @@
 {% block content %}
     <h2>COURSE: {{ course.name }}</h2>
     <p>description: {{ course.description }}</p>
-    <form method="post" enctype="multipart/form-data"
-          action="{% url 'academy_site:signup_course' city_slug=course.theme.city.slug theme_slug=course.theme.slug course_slug=course.slug %}">
+    <form method="post" enctype="multipart/form-data" action="{{ course.get_signup_url }}">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" name="signup" value="SignUp" />

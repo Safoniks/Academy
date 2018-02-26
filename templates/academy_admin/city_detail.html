@@ -4,7 +4,7 @@
 {% block subcontent %}
     <h2>{{ city.name }}</h2>
 
-    <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:city_detail' city.pk %}">
+    <form method="post" enctype="multipart/form-data" action="{{ city.get_admin_url }}">
         {% csrf_token %}
         {{ update_city_form.as_p }}
         <button type="submit">Save</button>
@@ -20,7 +20,7 @@
             </tr>
             {% for theme in city.theme_set.all %}
                 <tr>
-                    <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">{{ theme.name }}</a></td>
+                    <td><a href="{{ theme.get_admin_url }}">{{ theme.name }}</a></td>
                     <td>{{ theme.last_update }}</td>
                     <td><a href="{% url 'academy_admin:delete_theme' theme.pk %}">[Delete]</a></td>
                 </tr>
@@ -40,7 +40,7 @@
             </tr>
             {% for partner in city.partners.all %}
                 <tr>
-                    <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">{{ partner.name }}</a></td>
+                    <td><a href="{{ partner.get_admin_url }}">{{ partner.name }}</a></td>
                     <td>{{ partner.last_update }}</td>
                     <td><a href="{% url 'academy_admin:delete_partner' partner.pk %}?city={{ city.pk }}">[Delete]</a></td>
                 </tr>
@@ -61,7 +61,7 @@
             {% for teacher in teachers %}
                 <tr>
                     <td>
-                        <a href="{% url 'academy_admin:user_detail' teacher.pk %}">{{ teacher.full_name }}</a>
+                        <a href="{{ teacher.get_admin_url }}">{{ teacher.full_name }}</a>
                     </td>
                     <td>{{ teacher.adminprofile.last_update }}</td>
                     <td><a href="{% url 'academy_admin:delete_teacher' teacher.pk %}">[Delete]</a></td>

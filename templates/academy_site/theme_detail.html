@@ -9,27 +9,12 @@
     <div>
         <h2>Courses</h2>
         <ul>
-            {% for course in theme.course_set.all %}
+            {% for course in courses %}
                 <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;
                         background: url({{ course.photo.url }}) center; background-size: cover;">
-                    <a href="{% url 'academy_site:course_detail' city_slug=theme.city.slug theme_slug=theme.slug course_slug=course.slug %}"
-                       style="color: white">
+                    <a href="{{ course.get_site_url }}" style="color: white">
                         <p>name: {{ course.name }}</p>
                         <p>seats: {{ course.remaining_seats }}</p>
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div>
-        <h2>Partners</h2>
-        <ul>
-            {% for partner in theme.partners.all %}
-                <li style="display: inline-block;margin-right: 2%; text-align: center;">
-                    <p>{{ partner.name }}</p>
-                    <a href="{{ partner.link }}">
-                        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}" title="{{ partner.name }}"
-                             style="width: 50px; height: 50px;">
                     </a>
                 </li>
             {% endfor %}

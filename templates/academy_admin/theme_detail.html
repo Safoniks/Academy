@@ -4,7 +4,7 @@
 {% block subcontent %}
     <h2>{{ theme.name }}</h2>
 
-    <form method="post" enctype="multipart/form-data" action="{% url 'academy_admin:theme_detail' theme.pk %}">
+    <form method="post" enctype="multipart/form-data" action="{{ theme.get_admin_url }}">
         {% csrf_token %}
         {{ update_theme_form.as_p }}
         <button type="submit">Save</button>

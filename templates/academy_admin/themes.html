@@ -19,7 +19,7 @@
         </tr>
         {% for theme in themes %}
             <tr>
-                <td><a href="{% url 'academy_admin:theme_detail' theme.pk %}">{{ theme.name }}</a></td>
+                <td><a href="{{ theme.get_admin_url }}">{{ theme.name }}</a></td>
                 <td>{{ theme.last_update }}</td>
                 <td><a href="{% url 'academy_admin:add_course' %}?city={{ theme.city.pk }}&theme={{ theme.pk }}">[+ Add course]</a></td>
                 <td><a href="{% url 'academy_admin:delete_theme' theme.pk %}">[Delete]</a></td>

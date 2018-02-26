@@ -25,7 +25,7 @@
         </tr>
         {% for partner in partners %}
             <tr>
-                <td><a href="{% url 'academy_admin:partner_detail' partner.pk %}">{{ partner.name }}</a></td>
+                <td><a href="{{ partner.get_admin_url }}">{{ partner.name }}</a></td>
                 <td>{{ partner.last_update }}</td>
                 <td><a href="{% url 'academy_admin:delete_partner' partner.pk %}">[Delete]</a></td>
             </tr>

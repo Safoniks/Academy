@@ -19,7 +19,7 @@
         </tr>
         {% for auth_teacher in teachers %}
             <tr>
-                <td><a href="{% url 'academy_admin:user_detail' auth_teacher.pk %}">{{ auth_teacher.full_name }}</a></td>
+                <td><a href="{{ auth_teacher.get_admin_url }}">{{ auth_teacher.full_name }}</a></td>
                 <td>{{ auth_teacher.adminprofile.last_update }}</td>
                 <td><a href="{% url 'academy_admin:delete_teacher' auth_teacher.pk %}">[Delete]</a></td>
             </tr>

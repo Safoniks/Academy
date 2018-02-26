@@ -13,7 +13,8 @@ from .forms import (
     CreateBackOfficeUserForm,
     EditBackOfficeUserForm,
     ProfileForm,
-    ChangePassword,
+    ChangePasswordForm,
+    AddLessonForm,
 )
 from backend import login, logout
 from decorators import (
@@ -23,7 +24,7 @@ from decorators import (
     superuser_required,
 )
 
-from academy_site.models import City, Partner, AdminProfile, Theme, Course
+from academy_site.models import City, Partner, AdminProfile, Theme, Course, Lesson
 from academy_site.choices import *
 
 AuthUser = get_user_model()
@@ -60,7 +61,7 @@ def change_password(request):
     user = request.user
     redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, user.get_default_page())
     if request.method == 'POST':
-        form = ChangePassword(request.POST, user=user)
+        form = ChangePasswordForm(request.POST, user=user)
         if form.is_valid():
             form.save()
         return redirect(redirect_to)
@@ -345,27 +346,40 @@ def add_course(request):
 
 @staff_user_login_required(login_url='academy_admin:login')
 def course_detail(request, pk):
-    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:courses')
     user = request.user
     try:
         course = Course.objects.get(pk=pk)
     except ObjectDoesNotExist:
         raise Http404
+    course_city = course.theme.city
 
-    if not user.is_administrator and user not in course.teachers.all() and user.city != course.theme.city:
+    if not user.is_administrator and user not in course.teachers.all() and user.city != course_city:
         return HttpResponseForbidden()
 
+    city_themes = course_city.theme_set.all()
+    city_teachers = AuthUser.objects.teachers(city=course_city)
+    city_partners = course_city.partners.all()
+    form_selects = {
+        'themes': city_themes,
+        'teachers': city_teachers,
+        'partners': city_partners,
+    }
+
     if request.method == 'POST':
-        form = PartnerForm(request.POST, request.FILES, user=user, partner=partner)
-        if form.is_valid():
-            form.save()
+        if user.is_teacher:
+            return HttpResponseForbidden()
+        update_course_form = CourseForm(request.POST, request.FILES, course=course, **form_selects)
+        if update_course_form.is_valid():
+            update_course_form.save()
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, course.get_admin_url())
             return redirect(redirect_to)
     else:
-        form = PartnerForm(user=user, partner=partner)
+        update_course_form = CourseForm(course=course, **form_selects)
     context = {
         'user': user,
         'course': course,
-        'update_course_form': form,
+        'add_lesson_form': AddLessonForm(course=course),
+        'update_course_form': update_course_form,
     }
     return render(request, 'academy_admin/course_detail.html', context)
 
@@ -384,6 +398,39 @@ def delete_course(request, pk):
         return HttpResponseForbidden()
 
     course.delete()
+    return redirect(redirect_to)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def add_lesson(request):
+    user = request.user
+
+    if request.method == 'POST':
+        form = AddLessonForm(request.POST, user=user)
+        if form.is_valid():
+            lesson = form.save()
+            redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, lesson.course.get_admin_url())
+            return redirect(redirect_to)
+        return HttpResponse(400)
+    else:
+        raise Http404
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@moderator_required
+def delete_lesson(request, pk):
+    user = request.user
+    try:
+        lesson = Lesson.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    if user.is_moderator and user.city != lesson.course.theme.city:
+        return HttpResponseForbidden()
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, lesson.course.get_admin_url())
+
+    lesson.delete()
     return redirect(redirect_to)
 
 
@@ -676,6 +723,6 @@ def user_profile(request):
     context = {
         'user': user,
         'profile_form': form,
-        'change_password_form': ChangePassword(),
+        'change_password_form': ChangePasswordForm(),
     }
     return render(request, 'academy_admin/user_profile.html', context)

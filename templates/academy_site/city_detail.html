@@ -4,10 +4,17 @@
 {% block content %}
     <div>
         <p>name: {{ city.name }}</p>
-        <p>description: {{ city.description }}</p>
+        <p>description: {{ city.full_description }}</p>
         <p>phone: {{ city.phone }}</p>
         <p>email: {{ city.email }}</p>
-        <p>address: {{ city.school_address }}</p>
+        <p>location: {{ city.location }}</p>
+    {% if city.photo %}
+        <img src="{{ city.photo.url }}" alt="" style="width: 500px; height: 350px;">
+    {% endif %}
+    {% if city.video %}
+        <iframe width="560" height="315" src="{{ city.video }}"
+                frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    {% endif %}
     </div>
     <div>
         <h2>Themes</h2>
@@ -15,7 +22,7 @@
             {% for theme in city.theme_set.all %}
                 <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;
                         background: url({{ theme.photo.url }}) center; background-size: cover;">
-                    <a href="{% url 'academy_site:theme_detail' city_slug=city.slug theme_slug=theme.slug %}" style="color: white">
+                    <a href="{{ theme.get_site_url }}" style="color: white">
                         <p>name: {{ theme.name }}</p>
                         <p>description: {{ theme.description }}</p>
                     </a>
@@ -26,22 +33,25 @@
     <div>
         <h2>Teachers</h2>
         <ul>
-            {% for teacher in teachers %}
+            {% for auth_teacher in teachers %}
                 <li style="display: inline-block;margin-right: 2%; text-align: center; max-width: 15%;">
+                <p>NAME: {{ auth_teacher.full_name }}</p>
+                <p>EMAIL: {{ auth_teacher.email }}</p>
                     <p>
                         LINKS:
-                        {% if teacher.facebook_link %}
-                            <a href="{{ teacher.facebook_link }}">facebook_link</a>
+                        {% if auth_teacher.adminprofile.facebook_link %}
+                            <a href="{{ auth_teacher.adminprofile.facebook_link }}">facebook_link</a>
                         {% endif %}
-                        {% if teacher.instagram_link %}
-                            <a href="{{ teacher.instagram_link }}">instagram_link</a>
+                        {% if auth_teacher.adminprofile.instagram_link %}
+                            <a href="{{ auth_teacher.adminprofile.instagram_link }}">instagram_link</a>
                         {% endif %}
-                        {% if teacher.other_link %}
-                            <a href="{{ teacher.other_link }}">other_link</a>
+                        {% if auth_teacher.adminprofile.other_link %}
+                            <a href="{{ auth_teacher.adminprofile.other_link }}">other_link</a>
                         {% endif %}
                     </p>
-                    <p>BIO: {{ teacher.bio }}</p>
-                    <img src="{{ teacher.auth_user.photo.url }}" style="width: 50px; height: 50px;">
+                <p>PHONE: {{ auth_teacher.adminprofile.phone }}</p>
+                    <p>BIO: {{ auth_teacher.adminprofile.bio }}</p>
+                {% if auth_teacher.photo %}<img src="{{ auth_teacher.photo.url }}" style="width: 50px; height: 50px;">{% endif %}
                 </li>
             {% endfor %}
         </ul>

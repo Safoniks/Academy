@@ -5,10 +5,12 @@ from werkzeug.utils import secure_filename
 from django.template.defaultfilters import slugify
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.forms.models import model_to_dict
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from django.urls import reverse
 
 from .validators import positive_number
 from .choices import *
@@ -70,10 +72,10 @@ class AuthUserManager(BaseUserManager):
         return auth_user
 
     def create_site_user(self, email, password, profile_data=None, **extra_fields):
-        extra_fields.setdefault('is_active', True)
-
         if extra_fields.get('is_staff') is True:
             raise ValueError('Site user must have is_staff=False.')
+        if extra_fields.get('is_admin') is True:
+            raise ValueError('Site user must have is_admin=False.')
         if extra_fields.get('is_superuser') is True:
             raise ValueError('Site user must have is_superuser=False.')
         auth_user = self._create_user(email, password, **extra_fields)
@@ -127,6 +129,9 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def get_admin_url(self):
+        return reverse('academy_admin:user_detail', args=[str(self.pk)])
 
     def has_perm(self, perm, obj=None):
         try:
@@ -209,6 +214,10 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
             if getattr(self, prop, False):
                 return value
 
+    def to_dict_info(self):
+        fields = ['first_name', 'last_name', 'email', 'photo']
+        return model_to_dict(self, fields=fields)
+
 
 class SiteUser(models.Model):
     auth_user = models.OneToOneField('AuthUser', on_delete=models.CASCADE)
@@ -219,6 +228,7 @@ class SiteUser(models.Model):
     address = models.CharField(null=True, blank=True, max_length=50)
     mother_language = models.CharField(null=True, blank=True, max_length=50)
     salutation = models.CharField(null=True, blank=True, max_length=50)
+    know_academy_through = models.CharField(null=True, blank=True, max_length=200)
     postcode = models.IntegerField(null=True, blank=True)
     is_confirmed = models.BooleanField(default=False)
     confirmation_code = models.CharField(max_length=64)
@@ -229,6 +239,19 @@ class SiteUser(models.Model):
         db_table = 'site_user'
         verbose_name = 'site user'
         verbose_name_plural = 'site users'
+
+    def to_dict_profile(self):
+        fields_to_delete = ['auth_user', 'is_confirmed', 'confirmation_code', 'confirmation_code_expires', 'courses']
+        return model_to_dict(self, exclude=fields_to_delete)
+
+    def to_dict_user_info(self):
+        return {**self.auth_user.to_dict_info(), **self.to_dict_profile()}
+
+    def get_active_course_subscribes(self):
+        return UserCourse.objects.active_entries().filter(user=self)
+
+    def get_active_courses(self):
+        return [subscribe.course for subscribe in self.get_active_course_subscribes()]
 
 
 class AdminProfile(models.Model):
@@ -268,6 +291,9 @@ class Partner(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_admin_url(self):
+        return reverse('academy_admin:partner_detail', args=[str(self.pk)])
 
     def save(self, *args, **kwargs):
         try:
@@ -310,6 +336,12 @@ class City(models.Model):
     def __str__(self):
         return self.name
 
+    def get_admin_url(self):
+        return reverse('academy_admin:city_detail', args=[str(self.pk)])
+
+    def get_site_url(self):
+        return reverse('academy_site:city_detail', args=[str(self.slug)])
+
     def save(self, *args, **kwargs):
         if not self.id:
             self.slug = slugify(self.name)
@@ -349,6 +381,12 @@ class Theme(models.Model):
     def __str__(self):
         return self.name
 
+    def get_admin_url(self):
+        return reverse('academy_admin:theme_detail', args=[str(self.pk)])
+
+    def get_site_url(self):
+        return reverse('academy_site:theme_detail', args=[str(self.city.slug), str(self.slug)])
+
     def save(self, *args, **kwargs):
         if not self.id:
             self.slug = slugify(self.name)
@@ -381,7 +419,6 @@ class Course(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=10, default=0)
     price_description = models.CharField(max_length=100, null=True, blank=True)
     seats = models.IntegerField(validators=[positive_number])
-    remaining_seats = models.IntegerField(validators=[positive_number], blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
 
     theme = models.ForeignKey('Theme', on_delete=models.CASCADE)
@@ -392,13 +429,80 @@ class Course(models.Model):
         db_table = 'course'
         verbose_name = 'course'
         verbose_name_plural = 'courses'
+        unique_together = (('theme', 'slug',), ('theme', 'name',))
 
     def __str__(self):
         return self.name
 
+    @property
+    def next_lesson(self):
+        return self.lesson_set.filter(date__gt=timezone.now()).first()
+
+    @property
+    def remaining_seats(self):
+        return self.seats - UserCourse.objects.active_entries().filter(course=self).count()
+
+    @property
+    def reserved_seats(self):
+        return self.seats - self.remaining_seats
+
+    @property
+    def is_sold_out(self):
+        return self.remaining_seats < 1
+
+    @property
+    def is_archived(self):
+        last_lesson = self.lesson_set.all().last()
+        if last_lesson:
+            return last_lesson.date < timezone.now()
+        return False
+
+    @property
+    def rate(self):
+        return UserCourse.objects.ratio_like_dislike(self)
+
+    def get_active_subscriber_records(self):
+        return UserCourse.objects.active_entries().filter(course=self)
+
+    def get_active_subscribers_info(self):
+        subscribers = []
+        for user_course in self.get_active_subscriber_records():
+            if user_course.user:
+                user_info = user_course.user.to_dict_user_info()
+                user_info['is_anonymous'] = False
+            else:
+                user_info = model_to_dict(user_course.anonymous)
+                user_info['is_anonymous'] = True
+            user_info['is_confirmed'] = user_course.is_confirmed
+            user_info['subscribe_date'] = user_course.date
+            subscribers.append(user_info)
+        return subscribers
+
+    def get_admin_url(self):
+        return reverse('academy_admin:course_detail', args=[str(self.pk)])
+
+    def get_site_url(self):
+        return reverse('academy_site:course_detail',
+                       args=[str(self.theme.city.slug), str(self.theme.slug), str(self.slug)])
+
+    def get_signup_url(self):
+        return reverse('academy_site:signup_course',
+                       args=[str(self.theme.city.slug), str(self.theme.slug), str(self.slug)])
+
+    def get_unsubscribe_url(self):
+        return reverse('academy_site:unsubscribe_course',
+                       args=[str(self.theme.city.slug), str(self.theme.slug), str(self.slug)])
+
+    def get_like_url(self):
+        return reverse('academy_site:like_course',
+                       args=[str(self.theme.city.slug), str(self.theme.slug), str(self.slug)])
+
+    def get_dislike_url(self):
+        return reverse('academy_site:dislike_course',
+                       args=[str(self.theme.city.slug), str(self.theme.slug), str(self.slug)])
+
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.remaining_seats = self.seats
             self.slug = slugify(self.name)
         try:
             this = self.__class__.objects.get(pk=self.pk)
@@ -422,15 +526,57 @@ class Lesson(models.Model):
         db_table = 'lesson'
         verbose_name = 'lesson'
         verbose_name_plural = 'lessons'
+        ordering = ['date']
+
+    @property
+    def is_past(self):
+        return self.date < timezone.now()
+
+
+class UserCourseManager(models.Manager):
+    def active_entries(self):
+        return self.get_queryset().filter(
+            (Q(is_confirmed=True) | Q(confirmation_code_expires__gt=timezone.now())) & Q(is_unsubscribed=False)
+        )
+
+    def likes(self, course):
+        return self.active_entries().filter(vote__gt=0, course=course)
+
+    def dislikes(self, course):
+        return self.active_entries().filter(vote__lt=0, course=course)
+
+    def ratio_like_dislike(self, course):
+        likes_count = self.likes(course).count()
+        dislikes_count = self.dislikes(course).count()
+        try:
+            ratio = (likes_count / (likes_count + dislikes_count)) * 100
+        except ZeroDivisionError:
+            return 0
+        return round(ratio, 2)
 
 
 class UserCourse(models.Model):
-    user = models.ForeignKey('SiteUser', on_delete=models.CASCADE)
+    LIKE = 1
+    DISLIKE = -1
+
+    VOTES = (
+        (DISLIKE, 'Dislike'),
+        (LIKE, 'Like')
+    )
+
+    user = models.ForeignKey('SiteUser', on_delete=models.CASCADE, null=True, blank=True)
+    anonymous = models.OneToOneField('Anonymous', on_delete=models.CASCADE, null=True, blank=True)
     course = models.ForeignKey('Course', on_delete=models.CASCADE)
-    know_academy_through = models.CharField(max_length=100, null=True, blank=True)
-    questions = models.CharField(max_length=100, null=True, blank=True)
-    rate = models.IntegerField(default=0)
+    questions = models.CharField(max_length=100)
+    vote = models.SmallIntegerField(choices=VOTES, default=0)
     date = models.DateTimeField(auto_now_add=True)
+    is_confirmed = models.BooleanField(default=False)
+    confirmation_code = models.CharField(max_length=64)
+    confirmation_code_expires = models.DateTimeField()
+    count = models.IntegerField(default=1)
+    is_unsubscribed = models.BooleanField(default=False)
+
+    objects = UserCourseManager()
 
     class Meta:
         db_table = 'user_course'
@@ -440,3 +586,48 @@ class UserCourse(models.Model):
 
     def __str__(self):
         return '{user}-{course}'.format(user=self.user.auth_user.full_name, course=self.course.name)
+
+    @property
+    def is_liked(self):
+        return self.vote == self.LIKE
+
+    @property
+    def is_disliked(self):
+        return self.vote == self.DISLIKE
+
+    def get_user_attr(self, attr, default=None):
+        if self.anonymous:
+            return getattr(self.anonymous, attr, default)
+
+        value = getattr(self.user, attr, default)
+        if value is not default:
+            return value
+        else:
+            return getattr(self.user.auth_user, attr, default)
+
+
+class Anonymous(models.Model):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    email = models.EmailField()
+    birthdate = models.DateField()
+    phone = models.CharField(max_length=20)
+    country = models.CharField(max_length=50)
+    city = models.CharField(max_length=50)
+    address = models.CharField(max_length=50)
+    mother_language = models.CharField(max_length=50)
+    salutation = models.CharField(max_length=50)
+    know_academy_through = models.CharField(max_length=200)
+    postcode = models.IntegerField()
+
+    class Meta:
+        db_table = 'anonymous'
+        verbose_name = 'anonymous'
+        verbose_name_plural = 'anonymous'
+
+    def __str__(self):
+        return self.email
+
+    @property
+    def full_name(self):
+        return '{first_name} {last_name}'.format(first_name=self.first_name, last_name=self.last_name)

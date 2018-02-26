@@ -11,7 +11,7 @@
         </tr>
         {% for admin in admins %}
             <tr>
-                <td><a href="{% url 'academy_admin:user_detail' admin.pk %}">{{ admin.full_name }}</a></td>
+                <td><a href="{{ admin.get_admin_url }}">{{ admin.full_name }}</a></td>
                 <td>{{ admin.get_role }}</td>
                 {% if user.pk != admin.pk %}
                     <td><a href="{% url 'academy_admin:delete_security' admin.pk %}">[Delete]</a></td>

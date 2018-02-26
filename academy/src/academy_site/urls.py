@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^reset-password/$', views.reset_password, name='reset_password'),
     url(r'^change-password/$', views.change_password, name='change_password'),
-    url(r'^email-confirm/(?P<user_id>\d+)/(?P<code>.+)/$', views.email_confirm, name='email_confirm'),
+    url(r'^email-confirm/(?P<instance_id>\d+)/(?P<code>.+)/$', views.email_confirm, name='email_confirm'),
     url(r'^new-confirmation-code/$', views.new_confirmation_code, name='new_confirmation_code'),
     url(r'^signin/$', views.signin, name='signin'),
     url(r'^contact-us/$', views.contact_us, name='contact_us'),
@@ -21,4 +21,7 @@ urlpatterns = [
     url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/$', views.theme_detail, name='theme_detail'),
     url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/(?P<course_slug>[\w-]+)/$', views.course_detail, name='course_detail'),
     url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/(?P<course_slug>[\w-]+)/signup/$', views.signup_course, name='signup_course'),
+    url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/(?P<course_slug>[\w-]+)/unsubscribe/$', views.unsubscribe_course, name='unsubscribe_course'),
+    url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/(?P<course_slug>[\w-]+)/like/$', views.like_course, name='like_course'),
+    url(r'^(?P<city_slug>[\w-]+)/(?P<theme_slug>[\w-]+)/(?P<course_slug>[\w-]+)/dislike/$', views.dislike_course, name='dislike_course'),
 ]

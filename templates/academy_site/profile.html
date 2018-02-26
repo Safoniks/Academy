@@ -12,14 +12,24 @@
         <table>
             <tr>
                 <th>COURSE</th>
-                <th>STATUS</th>
+                <th>NEXT LESSON</th>
+                <th>RATE</th>
             </tr>
-            {% for user_course in user.siteuser.usercourse_set.all %}
+            {% for course_subscribe in course_subscribes %}
                 <tr>
-                    <td><a
-                            href="{% url 'academy_site:course_detail' city_slug=user_course.course.theme.city.slug theme_slug=user_course.course.theme.slug course_slug=user_course.course.slug %}"
-                    >{{ user_course.course.name }}</a></td>
-                    <td>{{ user_course.course.status }}</td>
+                    <td><a href="{{ course_subscribe.course.get_site_url }}">{{ course_subscribe.course.name }}</a></td>
+                    <td>
+                        {% if course_subscribe.course.next_lesson %}
+                            {{ course_subscribe.course.next_lesson.date }}
+                        {% else %}
+                            <span>ARCHIVED</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ course_subscribe.course.rate }}</td>
+                    <td><a {% if course_subscribe.is_liked %}style="color: green;" {% endif %}
+                           href="{{ course_subscribe.course.get_like_url }}">[LIKE]</a></td>
+                    <td><a {% if course_subscribe.is_disliked %}style="color: red;" {% endif %}
+                           href="{{ course_subscribe.course.get_dislike_url }}">[DISLIKE]</a></td>
                 </tr>
             {% endfor %}
         </table>

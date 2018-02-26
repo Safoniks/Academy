@@ -14,7 +14,7 @@
     <p>BIO: {{ back_office_user.adminprofile.bio }}</p>
 
     {% if form %}
-        <form method="post" action="{% url 'academy_admin:user_detail' back_office_user.pk %}">
+        <form method="post" action="{{ back_office_user.get_admin_url }}">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Save</button>

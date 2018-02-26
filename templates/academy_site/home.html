@@ -6,15 +6,11 @@
         <h2>Cities</h2>
         <ul>
             {% for city in cities %}
-                <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;
-                        background: url({{ city.photo.url }}); background-size: cover;">
-                <a href="{% url 'academy_site:city_detail' city.slug %}" style="color: white">
-                    <p>name: {{ city.name }}</p>
-                    <p>description: {{ city.description }}</p>
-                    <p>phone: {{ city.phone }}</p>
-                    <p>email: {{ city.email }}</p>
-                    <p>address: {{ city.school_address }}</p>
-                </a>
+                <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;">
+                    <a href="{{ city.get_site_url }}">
+                        <p>name: {{ city.name }}</p>
+                        <p>description: {{ city.short_description }}</p>
+                    </a>
                 </li>
             {% endfor %}
         </ul>
