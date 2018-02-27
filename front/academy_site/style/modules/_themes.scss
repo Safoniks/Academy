@@ -1,0 +1,52 @@
+.themes{
+  padding: 30px 0 0 0;
+  .wr{
+    p{
+      margin: 18px 0 30px 0;
+      font-family: HelveticaNeue;
+    }
+    .themes-list{
+      display: flex;
+      flex-wrap: wrap;
+      border-bottom: solid 1px #8c97b2;
+      li{
+        margin: 0 .5% 28px .5%;
+        flex-basis: 24%;
+        a{
+          .themes-img{
+            width: 264px;
+            height: 200px;
+            opacity: 0.8;
+            border-radius: 5px;
+            background-color: rgba(89, 33, 138, 0.6);
+            position: relative;
+            margin: 0 auto;
+            .themes-name{
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%,-50%);
+              font-size: 18px;
+              font-weight: bold;
+              color: #ffffff;
+              white-space: nowrap;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+@media only screen
+and (max-width: 1060px) {
+  .themes{
+    .wr{
+      .themes-list{
+        li{
+          margin: 0 .5% 28px .5%;
+          flex-basis: 30%;
+        }
+      }
+    }
+  }
+}

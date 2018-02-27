@@ -15,10 +15,10 @@ var gulp = require('gulp'),
 
 var path = {
     build: { //Тут мы укажем куда складывать готовые после сборки файлы
-        js: '../static/academy/js/',
-        css: '../static/academy/css/',
-        img: '../static/academy/img/',
-        fonts: '../static/academy/fonts/'
+        js: '../../static/academy_site/js/',
+        css: '../../static/academy_site/css/',
+        img: '../../static/academy_site/img/',
+        fonts: '../../static/academy_site/fonts/'
     },
     src: { //Пути откуда брать исходники
         js: 'js/main.js',//В стилях и скриптах нам понадобятся только main файлы
@@ -32,7 +32,7 @@ var path = {
         img: 'img/**/*.*',
         fonts: 'fonts/**/*.*'
     },
-    clean: '../static/polls'
+    clean: '../../static/academy_site'
 };
 
 gulp.task('js:build', function () {
@@ -46,7 +46,10 @@ gulp.task('js:build', function () {
 gulp.task('style:build', function () {
     gulp.src(path.src.style) //Выберем наш main.scss
         .pipe(sass()) //Скомпилируем
-        .pipe(prefixer()) //Добавим вендорные префиксы
+        .pipe(prefixer({
+             browsers: ['last 50 versions'],
+             cascade: false
+         })) //Добавим вендорные префиксы
         .pipe(cssmin()) //Сожмем
         .pipe(gulp.dest(path.build.css)); //И в build
 });

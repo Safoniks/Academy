@@ -1,0 +1,29 @@
+.done-popup {
+  .popup-inner {
+    min-width: 579px;
+    max-width: 579px;
+    position: relative;
+    z-index: 4;
+    padding: 53px 0 58px;
+    .done {
+      text-align: center;
+      font-size: 46px;
+      font-weight: bold;
+      letter-spacing: 0.1px;
+      color: #505363;
+    }
+    p {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      color: #505363;
+      margin: 23px 0 47px 0;
+    }
+    .button {
+      min-width: 277px;
+    }
+    .button-box {
+      text-align: center;
+    }
+  }
+}

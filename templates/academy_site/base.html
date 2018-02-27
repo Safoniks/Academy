@@ -1,12 +1,15 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
-<html lang="en">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <!--<link rel="stylesheet" href="{{ STATIC_PREFIX }}academy/css/main.css">-->
     <title>{% block title %}HerstelAcademia{% endblock %}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:300,400,700|Roboto:500&amp;subset=cyrillic"
+          rel="stylesheet">
+    <link rel="stylesheet" href="{{ STATIC_PREFIX }}academy_site/css/main.css">
 </head>
 <body>
 <div class="container-fluid">
@@ -14,6 +17,7 @@
     {% block content %}{% endblock %}
     {% include 'academy_site/footer.html' %}
 </div>
-<!--<script src="{{ STATIC_PREFIX }}academy/js/main.js"></script>-->
+
+<script src="{{ STATIC_PREFIX }}academy_site/js/main.js"></script>
 </body>
 </html>

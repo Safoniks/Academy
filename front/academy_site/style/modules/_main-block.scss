@@ -1,0 +1,21 @@
+.main-block{
+  background: #212121;
+  .wr{
+    display: flex;
+    align-items: center;
+    height: calc( 100vh - 4vh - 13vh - 8vh);
+    .main-title{
+      font-size: 40px;
+      font-weight: bold;
+      line-height: 0.9;
+      color: #ffffff;
+    }
+    .main-sub-title{
+      font-size: 16px;
+      line-height: 1.25;
+      color: #ffffff;
+      margin: 35px 0;
+      max-width: 501px;
+    }
+  }
+}

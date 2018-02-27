@@ -1,0 +1,32 @@
+.all-lessons-popup {
+  .popup-inner {
+    position: relative;
+    min-width: 305px;
+    z-index: 4;
+    padding: 19px 21px 31px 21px;
+    .top-side {
+      display: flex;
+      justify-content: space-between;
+      margin: 0 0 10px 0;
+      .title {
+        font-size: 18px;
+        font-weight: bold;
+        text-align: left;
+        color: #505363;
+      }
+    }
+    .close {
+      position: relative;
+      top: 0;
+      right: 0;
+    }
+    .lessons-date{
+      font-size: 16px;
+      text-align: justify;
+      color: #8c97b2;
+      div{
+        margin: 10px 0;
+      }
+    }
+  }
+}

@@ -1,0 +1,106 @@
+.header-signin {
+  .call-us {
+    background-color: #f7f7f7;
+    .wr {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      height: 4vh;
+      .r-side {
+        display: flex;
+        justify-content: center;
+        .phone, .email {
+          font-family: Roboto;
+          font-size: 12px;
+          font-weight: 500;
+          color: #333333;
+        }
+        .phone{
+          border-right: 1px solid #c0bfbf;
+          padding: 0 7px 0 0;
+          a{
+            color: #59218a;
+          }
+        }
+        .email{
+          padding: 0 0 0 7px;
+          a{
+            color: #333333;
+          }
+        }
+      }
+    }
+  }
+  .header-log-in{
+    .wr{
+      .logo-wr{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #505363;
+        height: 13vh;
+        .logo{
+          font-size: 20px;
+          color: #2c3039;
+          span{
+            font-weight: bold;
+          }
+        }
+        .user{
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          .photo-user{
+            width: 30px;
+            height: 30px;
+            border: solid 1px #979797;
+            border-radius: 100%;
+          }
+          p{
+            font-family: HelveticaNeue;
+            font-weight: bold;
+            color: #666666;
+            margin: 0 0 0 10px;
+          }
+        }
+      }
+    }
+  }
+  .header-nav{
+    .wr{
+      display: flex;
+      align-items: center;
+      height: 8vh;
+      ul{
+        display: flex;
+        a{
+          font-family: Montserrat;
+          font-weight: bold;
+          letter-spacing: 0.1px;
+          color: #505363;
+          margin: 0 25px 0 0;
+          position: relative;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: .6s;
+          &:before {
+            content: '';
+            height: 1px;
+            background: #505363;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            right: 50%;
+            transition: .3s cubic-bezier(.45, 1.06, .58, 1.31);
+          }
+          &:hover {
+            &:before {
+              right: 0;
+              left: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}

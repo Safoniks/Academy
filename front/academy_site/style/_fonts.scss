@@ -1,0 +1,64 @@
+/*@font-face {
+    font-family: 'master_of_breakregular';
+    src: url('../fonts/master_of_break-webfont.eot');
+    src: url('../fonts/master_of_break-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/master_of_break-webfont.woff2') format('woff2'),
+         url('../fonts/master_of_break-webfont.woff') format('woff'),
+         url('../fonts/master_of_break-webfont.ttf') format('truetype'),
+         url('../fonts/master_of_break-webfont.svg#master_of_breakregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}*/
+
+@mixin fontFace($FontName, $FontPathName ) {
+
+@font-face {
+
+  font-family: '#{$FontName}';
+	src:	url('../fonts/#{$FontPathName}.eot');
+    src:	url('../fonts/#{$FontPathName}.eot?#iefix') format('embedded-opentype'),
+			url('../fonts/#{$FontPathName}.woff2') format('woff2'),
+            url('../fonts/#{$FontPathName}.woff') format('woff'),
+            url('../fonts/#{$FontPathName}.ttf') format('truetype');
+
+  font-weight: normal;
+  font-style: normal;
+  }
+}
+
+
+@mixin font($family,$fs,$lh:$fs) {
+    font-family: $family;
+    font-size: $fs;
+
+    @if $lh {
+        line-height: $lh;
+    }
+}
+@font-face {
+  font-family: ProximaNovaRegular;
+  src: url("../fonts/Proxima Nova Regular.otf") format('OpenType');
+}
+
+@font-face {
+
+  font-family: HelveticaNeue;
+  src:  url("../fonts/HelveticaNeue.ttf") format('truetype');
+
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+
+  font-family: HelveticaNeueBold;
+  src:  url("../fonts/HelveticaNeueBold.ttf") format('truetype');
+}
+
+/* USAGE
+@include fontFace('MyriadProSemibold','MyriadProSemibold');
+@include fontFace('MyriadProRegular','MyriadProRegular');
+$myriad-bold: 'MyriadProSemibold';
+$myriad-r: 'MyriadProRegular';
+
+*/

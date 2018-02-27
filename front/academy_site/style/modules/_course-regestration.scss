@@ -1,0 +1,59 @@
+.course-regestration{
+  padding: 20px 0 119px 0;
+  .wr{
+    .b-title{
+      margin: 0 0 18px 0;
+    }
+    p{
+      text-align: justify;
+      margin: 0 0 40px 0;
+      font-family: HelveticaNeue;
+    }
+    .input-wr{
+      margin: 0 0 25px 0;
+    }
+    .form-registr{
+      max-width: 577px;
+      .top-side{
+        display: flex;
+        justify-content: space-between;
+        .input-wr{
+          flex-basis: 47%;
+        }
+      }
+      .user-birthday{
+        display: flex;
+        justify-content: space-between;
+        max-width: 426px;
+        .form-select-wr{
+          flex-basis: 30%;
+        }
+      }
+      .email, .phone, .country, .city{
+        max-width: 426px;
+      }
+      .postcode, .language, .salutation{
+        max-width: 199px;
+      }
+      .subscribe{
+        display: flex;
+        .button-box{
+          margin: 0 25px 0 0;
+          &:first-child{
+            .button{
+              line-height: 50px;
+              min-width: 125px;
+            }
+          }
+          &:last-child{
+           .button{
+             line-height: 50px;
+             min-width: 276px;
+           }
+            margin: 0;
+          }
+        }
+      }
+    }
+  }
+}

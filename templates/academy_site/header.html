@@ -1,21 +1,21 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
-{% if messages %}
-    <style>
-        .success {
-            color: green;
-        }
-
-        .error {
-            color: red;
-        }
-    </style>
-    <ul style="text-align: center; font-size: 20px;">
-        {% for message in messages %}
-            <li class="{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+{#{% if messages %}#}
+{#    <style>#}
+{#        .success {#}
+{#            color: green;#}
+{#        }#}
+{##}
+{#        .error {#}
+{#            color: red;#}
+{#        }#}
+{#    </style>#}
+{#    <ul style="text-align: center; font-size: 20px;">#}
+{#        {% for message in messages %}#}
+{#            <li class="{{ message.tags }}">{{ message }}</li>#}
+{#        {% endfor %}#}
+{#    </ul>#}
+{#{% endif %}#}
 <div style="display: flex; justify-content: space-around;">
     <h1><a href="{% url 'academy_site:home' %}">HERSTELACADEMIE</a></h1>
     <div>
@@ -59,7 +59,32 @@
     <h2>Sign in</h2>
     <form method="post" action="{% url 'academy_site:signin' %}">
         {% csrf_token %}
-        {{ signin_form.as_p }}
+
+        {{ signin_form.non_field_errors }}
+
+        {{ signin_form.source.errors }}
+        {{ signin_form.source }}
+
+        <table border="1">
+
+            <tr>
+                <th>{{ signin_form.email.label_tag }}</th>
+                <td>
+                    {{ signin_form.email.errors }}
+                    {{ signin_form.email }}
+                </td>
+            </tr>
+
+            <tr>
+                <th>{{ signin_form.password.label_tag }}</th>
+                <td>
+                    {{ signin_form.password.errors }}
+                    {{ signin_form.password }}
+                </td>
+            </tr>
+
+        </table>
+
         <button type="submit">Sign in</button>
     </form>
 {% endif %}

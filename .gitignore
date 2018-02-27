@@ -110,3 +110,4 @@ venv.bak/
 /data/
 /static/
 /academy/settings/local.py
+node_modules/

@@ -1,0 +1,77 @@
+.teacher-popup {
+  .popup-inner {
+    position: relative;
+    min-width: 579px;
+    z-index: 4;
+    padding: 48px 31px 31px 31px;
+    .teacher-info{
+      display: flex;
+      align-items: center;
+      .teacher-photo{
+        width: 125px;
+        height: 125px;
+        border-radius: 5px;
+        border: solid 1px #979797;
+        margin: 0 auto;
+        flex-basis: 20%;
+      }
+      .r-side{
+        margin: 0 0 0 36px;
+        .teacher-name{
+          font-size: 20px;
+          font-weight: bold;
+          line-height: 1.8;
+          color: #505363;
+          //margin: 10px 0 0 0;
+        }
+        .contacts{
+          .contact-i{
+            display:flex;
+            align-items: center;
+            &:nth-child(1){
+              margin: 24px 0 24px 0;
+            }
+            .icon{
+              margin: 0 20px 0 0;
+            }
+            a{
+              font-size: 16px;
+              font-weight: 600;
+              color: #505363;
+            }
+            .mail{
+              border-bottom: 1px solid #505363 ;
+            }
+          }
+        }
+      }
+    }
+    ul{
+      display: flex;
+      align-items: center;
+      margin: 20px 0 12px 0;
+      li{
+        margin: 0 33.6px 0 0;
+        &:last-child {
+          margin: 0;
+        }
+        a {
+          &:hover {
+            i {
+              transform: scale(1.2);
+            }
+          }
+        }
+        img {
+          font-size: 34px;
+          color: #8d98a1;
+          transition: .3s;
+        }
+      }
+    }
+    p{
+      max-width: 571px;
+      text-align: justify;
+    }
+  }
+}

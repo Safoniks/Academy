@@ -1,0 +1,109 @@
+.edit-myinfo{
+  padding: 30px 0 34px 0;
+  .wr{
+    .b-title{
+      margin: 0 0 30px 0;
+    }
+    .input-wr{
+      margin: 0 0 25px 0;
+    }
+    .profile{
+      max-width: 426px;
+      .user-birthday{
+        display: flex;
+        justify-content: space-between;
+        .form-select-wr{
+          flex-basis: 30%;
+        }
+      }
+      .change-password{
+        display: flex;
+        align-items: center;
+        margin: 0 0 30px 0;
+        a{
+          border-bottom: 1px solid #59218a;
+          font-size: 16px;
+          font-weight: bold;
+          text-align: justify;
+          color: #59218a;
+          text-transform: uppercase;
+          margin: 0 0 0 12px;
+        }
+      }
+      .edit-profile{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 0 20px 0;
+        .avatar-upload {
+          position: relative;
+          .avatar-edit {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            input {
+              display: none;
+              + label {
+                height: 30px;
+                border-radius: 5.5px;
+                background-color: #8c97b2;
+                color: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: space-around;
+                font-size: 14px;
+                margin-bottom: 0;
+                cursor: pointer;
+                font-weight: normal;
+                transition: all .2s ease-in-out;
+              }
+            }
+          }
+          .avatar-preview {
+            width: 125px;
+            height: 125px;
+            position: relative;
+            border-radius: 5.5px;
+            > div {
+              width: 100%;
+              height: 100%;
+              border-radius: 5.5px;
+              background-size: cover;
+              background-repeat: no-repeat;
+              background-position: center;
+            }
+          }
+        }
+        .r-side{
+          flex-basis: 60%;
+          input[name="name"] {
+            margin: 0 0 18px 0;
+          }
+        }
+      }
+      .postcode, .language, .salutation{
+        max-width: 199px;
+      }
+    }
+    .cs-skin-elastic .cs-options span{
+      font-size: 12px;
+    }
+    .select{
+      z-index: 100;
+      height: 42px;
+      background-color: #ffffff;
+      border-radius: 5px;
+      border: solid 1px #8c97b2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    .button{
+      line-height: 50px;
+      min-width: 125px;
+    }
+  }
+}

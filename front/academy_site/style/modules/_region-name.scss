@@ -1,0 +1,60 @@
+.region-name{
+  padding: 30px 0 0 0;
+  .wr{
+    border-bottom: solid 1px #8c97b2;
+    .region{
+      display: flex;
+      align-items: center;justify-content: space-between;
+      .l-side{
+        .b-title{
+          font-family: HelveticaNeueBold;
+          text-align: justify;
+          span{
+            font-family: HelveticaNeue;
+          }
+        }
+        .city{
+          font-weight: 300;
+          font-family: HelveticaNeue;
+          font-size: 24px;
+          text-align: justify;
+          color: #505363;
+          text-transform: uppercase;
+          margin: 5px 0 32px 0;
+        }
+        p{
+          text-align: justify;
+          max-width: 636px;
+          font-family: HelveticaNeue;
+        }
+      }
+    }
+    .contacts-city{
+      display: flex;
+      align-items: center;
+      margin: 30px 0 30px 0;
+      .contact-item{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 56px 0 0;
+        .icon{
+          margin: 0 20px 0 0;
+        }
+        a{
+          font-size: 16px;
+          font-weight: 600;
+          color: #505363;
+        }
+        .mail{
+          border-bottom: 1px solid #505363 ;
+        }
+        span{
+          font-size: 16px;
+          font-weight: 600;
+          color: #505363;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,116 @@
+.my-courses{
+  padding: 30px 0 30px 0;
+  .wr{
+    .profile{
+      display: flex;
+      justify-content: space-between;
+      max-width: 450px;
+      margin: 0 0 30px 0;
+      .avatar-preview {
+        width: 125px;
+        height: 125px;
+        position: relative;
+        border-radius: 5.5px;
+        > div {
+          width: 100%;
+          height: 100%;
+          border-radius: 5.5px;
+          background-size: cover;
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+      }
+      .r-side{
+        .button-boxes{
+          margin: 11px 0 16px 0;
+          display: flex;
+          justify-content: space-between;
+          &:nth-child(1){
+            .button-box{
+              .button{
+                line-height: 40px;
+                min-width: 126px;
+              }
+            }
+          }
+          &:nth-child(2){
+            .button-box{
+              .button{
+                line-height: 40px;
+                min-width: 126px;
+              }
+              .button-red{
+                color: #ffffff;
+                background: #d0021b;
+              }
+            }
+          }
+        }
+        .text-box{
+          font-size: 16px;
+          font-weight: bold;
+          color: #d0021b;
+            span{
+              &:nth-child(2){
+               span{
+                 border-bottom: 1px solid #d0021b;
+               }
+              }
+            }
+        }
+      }
+    }
+    .course-title{
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3039;
+    }
+    ul{
+      margin: 30px 0 0 0;
+      li{
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #dadfea;
+        padding: 14px 0;
+        & > div{
+          &:nth-child(1)
+          {
+            flex-basis: 13%;
+            max-width: 13%;
+
+          }
+          &:nth-child(2)
+          {
+            flex-basis: 82%;
+            max-width: 82%;
+          }
+          &:nth-child(3)
+          {
+            flex-basis: 5%;
+            max-width: 5%;
+          }
+        }
+        .course-name-head, .course-data-head{
+          font-size: 12px;
+          font-weight: bold;
+          color: #8c97b2;
+          text-transform: uppercase;
+        }
+        .course-name{
+          font-weight: bold;
+          color: #505363;
+          span{
+            border-bottom: 1px solid #505363;
+          }
+        }
+        .course-data{
+          color: #505363
+        }
+        .thumbs{
+          display: flex;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+}

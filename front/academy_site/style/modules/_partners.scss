@@ -1,0 +1,22 @@
+.partners{
+  padding: 30px 0 0 0;
+  .wr{
+    .b-title{
+      margin: 0 0 30px 0;
+    }
+    .partners-list{
+      display: flex;
+      //align-items: center;
+      flex-wrap: wrap;
+      //justify-content: space-between;
+      border-bottom: solid 1px #8c97b2;
+      .partners-i{
+        width: 100px;
+        height: 100px;
+        background-color: #d8d8d8;
+        margin: 0 1% 30px 0;
+        flex-basis: 12.5%;
+      }
+    }
+  }
+}
