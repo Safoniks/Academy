@@ -1,0 +1,90 @@
+{% extends 'academy_site/base.html' %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+{% block content %}
+    <section class="workgroup">
+        <div class="about-workgroup">
+            <div class="wr">
+                <div class="l-side">
+                    <div class="b-title">
+                        Basic principles of a Restoration <br/>
+                        Academy?
+                    </div>
+                    <div class="b-title">
+                        What does a Recovery Academy?
+                    </div>
+                </div>
+                <div class="r-side">
+                    <div class="download">
+                        <i class="fa fa-file"></i>
+                        <a href="">Download</a>
+                    </div>
+                    <div class="download">
+                        <i class="fa fa-file"></i>
+                        <a href="">Download</a>
+                    </div>
+                </div>
+                <div class="block-two">
+                    <div class="b-title">
+                        Flemish Workgroup
+                    </div>
+                    <p>
+                        The Flemish Association for Mental Health (VVGG) and Mentalis support start Recovery Academies
+                        in
+                        Flanders. They organize a Task Force Recovery Academies and an online knowledge network for
+                        regions that
+                        wish to offer an educational offer in accordance with the principles of the Recovery Academy.
+                    </p>
+                    <div class="button-box open-contact-us">
+                        <button class="button button-purple">Contact us</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="contact-us-popup popup">
+        <div class="overlay"></div>
+        <div class="popup-inner">
+            <form method="post" action="{% url 'academy_site:contact_us' %}">
+                {% csrf_token %}
+                <div class="title-top">
+                    <div class="b-title">
+                        Contact us
+                    </div>
+                    <div class="close"></div>
+                </div>
+                <div class="input-top">
+                    {% for hidden_field in contact_us_form.hidden_fields %}
+                        {{ hidden_field.errors }}
+                        {{ hidden_field }}
+                    {% endfor %}
+                    <div class="input-wr">
+                        <label>Name</label>
+                        <input class="input-elem-form"
+                               type="text"
+                               name="{{ contact_us_form.name.name }}"
+                               {% if contact_us_form.name.initial != None %}value="{{ contact_us_form.name.value }}"{% endif %}
+                               {% if contact_us_form.name.field.required %}required{% endif %}>
+                    </div>
+                    <div class="input-wr">
+                        <label>Email</label>
+                        <input class="input-elem-form"
+                               type="email"
+                               name="{{ contact_us_form.email.name }}"
+                               {% if contact_us_form.email.initial != None %}value="{{ contact_us_form.email.value }}"{% endif %}
+                               {% if contact_us_form.email.field.required %}required{% endif %}>
+                    </div>
+                </div>
+                <div class="input-wr">
+                    <label>Massege</label>
+                    <textarea rows="10" cols="42"
+                              name="{{ contact_us_form.message.name }}"
+                              {% if contact_us_form.message.field.required %}required{% endif %}></textarea>
+                </div>
+                <div class="button-box">
+                    <button type="submit" class="button button-purple" id="form_submit">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

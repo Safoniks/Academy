@@ -7,6 +7,8 @@ from . import views
 app_name = 'academy_site'
 urlpatterns = [
     url(r'^$', views.home, name='home'),
+    url(r'^workgroup/$', views.workgroup, name='workgroup'),
+    url(r'^werkboek/$', views.werkboek, name='werkboek'),
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^reset-password/$', views.reset_password, name='reset_password'),
     url(r'^change-password/$', views.change_password, name='change_password'),

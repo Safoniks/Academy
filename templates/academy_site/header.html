@@ -16,75 +16,236 @@
 {#        {% endfor %}#}
 {#    </ul>#}
 {#{% endif %}#}
-<div style="display: flex; justify-content: space-around;">
-    <h1><a href="{% url 'academy_site:home' %}">HERSTELACADEMIE</a></h1>
-    <div>
-        {% if user.is_authenticated %}
-            {% if not user.siteuser.is_confirmed %}<p style="color:red;">please confirm e-mail</p>{% endif %}
-            <div style="display: inline-block; margin-right: 10px;">
-                {% if user.photo %}
-                    <img style="height: 50px; width: 50px;" src="{{ user.photo.url }}" alt="">
+
+<header {% if user.is_authenticated %}class="header-signin"{% endif %}>
+    <div class="call-us">
+        <div class="wr">
+            <div class="r-side">
+                <div class="phone">
+                    Call us for <a href="tel:1800-888-999">1800-888-999</a>
+                </div>
+                <div class="email">
+                    <a href="mailto:info@herstelacademie.be">info@herstelacademie.be</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header-log-in">
+        <div class="wr">
+            <div class="logo-wr">
+                <div class="logo">
+                    <a href="{% url 'academy_site:home' %}"><span>HERSTEL</span>ACADEMIE</a>
+                </div>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'academy_site:profile' %}">
+                        <div class="user">
+                            <div class="photo-user">
+                                {% if user.photo %}
+                                    <img src="{{ user.photo.url }}" alt="">
+                                {% else %}
+                                    <img src="{{ STATIC_PREFIX }}academy_site/img/photo.png" alt="">
+                                {% endif %}
+                            </div>
+                            <p class="user-name">{{ user.full_name }}</p>
+                        </div>
+                    </a>
                 {% else %}
-                    <img style="height: 50px; width: 50px;" src="{{ STATIC_PREFIX }}academy/img/anonymous.png" alt="">
+                    <div class="log-in">
+                        <a href="#sign-in" class="sign-in">SIGN IN</a>
+                        <a href="#sign-up" class="sign-up">SIGN UP</a>
+                    </div>
                 {% endif %}
             </div>
-            <div style="display: inline-block;">
-                <p>{{ user.full_name }}</p>
-                <p>{{ user.get_role }}</p>
-                <p><a href="{% url 'academy_site:profile' %}">[profile]</a></p>
-            </div>
-        {% else %}
-            <p>Welcome, new user. Please log in.</p>
-        {% endif %}
+        </div>
     </div>
-</div>
+    <div class="header-nav">
+        <div class="wr">
+            <ul class="nav">
+                <li><a href="{% url 'academy_site:home' %}">OVER</a></li>
+                <li><a href="#cities-and-contacts">AANBOD PER REGIO</a></li>
+                <li><a href="{% url 'academy_site:werkboek' %}">WERKGROEP</a></li>
+                <li><a href="{% url 'academy_site:workgroup' %}">WERKBOEK</a></li>
+                <li><a href="#contact-us">CONTACT</a></li>
+            </ul>
+            <ul class="language-select">
+                <li><a href="#" class="english">EN</a></li>
+                <li><a href="#" class="">FR</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
 
-<div style="background-color: beige; text-align: center;">MENU</div>
 
 {% if not user.is_authenticated %}
-    <h2>Sign up</h2>
-    <form method="post" action="{% url 'academy_site:signup' %}">
-        {% csrf_token %}
-        {{ signup_form.as_p }}
-        <button type="submit">Sign up</button>
-    </form>
+    <div class="login-popup popup">
+        <div class="overlay"></div>
+        <div class="popup-inner">
+            <ul class="tabs">
+                <li class="tab-link" data-tab="tab-1">SIGN IN</li>
+                <li class="tab-link" data-tab="tab-2">SIGN UP</li>
+            </ul>
 
-    <h2>Reset password</h2>
-    <form method="post" action="{% url 'academy_site:reset_password' %}">
-        {% csrf_token %}
-        {{ reset_password_form.as_p }}
-        <button type="submit">Reset password</button>
-    </form>
+            <div id="tab-1" class="tab-content">
+                <div class="inner">
+                    <form method="post" action="{% url 'academy_site:signin' %}">
+                        {% csrf_token %}
+                        {{ signin_form.non_field_errors }}
 
-    <h2>Sign in</h2>
-    <form method="post" action="{% url 'academy_site:signin' %}">
-        {% csrf_token %}
-
-        {{ signin_form.non_field_errors }}
-
-        {{ signin_form.source.errors }}
-        {{ signin_form.source }}
-
-        <table border="1">
-
-            <tr>
-                <th>{{ signin_form.email.label_tag }}</th>
-                <td>
-                    {{ signin_form.email.errors }}
-                    {{ signin_form.email }}
-                </td>
-            </tr>
-
-            <tr>
-                <th>{{ signin_form.password.label_tag }}</th>
-                <td>
-                    {{ signin_form.password.errors }}
-                    {{ signin_form.password }}
-                </td>
-            </tr>
-
-        </table>
-
-        <button type="submit">Sign in</button>
-    </form>
+                        {{ signin_form.source.errors }}
+                        {{ signin_form.source }}
+                        <div class="input-wr">
+                            {{ signin_form.email.errors }}
+                            <label>Email</label>
+                            <input class="input-elem-form"
+                                   type="email"
+                                   name="{{ signin_form.email.name }}"
+                                   {% if signin_form.email.initial != None %}value="{{ signin_form.email.value }}"{% endif %}
+                                   {% if signin_form.email.field.required %}required{% endif %}>
+                        </div>
+                        <div class="input-wr">
+                            <label>Password</label>
+                            <input class="input-elem-form"
+                                   type="password"
+                                   name="{{ signin_form.password.name }}"
+                                   {% if signin_form.password.initial != None %}value="{{ signin_form.password.value }}"{% endif %}
+                                   {% if signin_form.password.field.required %}required{% endif %}>
+                        </div>
+                        <div class="button-box">
+                            <button type="submit" class="button button-purple">SIGN IN</button>
+                        </div>
+                        <div class="line">
+                            <span>Or</span>
+                        </div>
+                        <div class="button-box">
+                            <button type="submit" class="button button-blue">
+                                <i class="fa fa-facebook" aria-hidden="true"></i>
+                                SIGN IN WITH FACEBOOK
+                            </button>
+                        </div>
+                        <div class="forgot-password">
+                            <a href="#" class="forgot-password">Fogot password? Click here!</a>
+                        </div>
+                        <p>By having an account you are agreeing with our <br/>
+                            <a href="">Terms and Conditions</a> and <a href="">Privacy Statement</a></p>
+                    </form>
+                </div>
+            </div>
+            <div id="tab-2" class="tab-content">
+                <div class="inner">
+                    <form method="post" action="{% url 'academy_site:signup' %}">
+                        {% csrf_token %}
+                        <div class="top-side">
+                            <div class="input-wr">
+                                <label>First Name</label>
+                                <input class="input-elem-form"
+                                       type="text"
+                                       name="{{ signup_form.first_name.name }}"
+                                       {% if signup_form.first_name.initial != None %}value="{{ signup_form.first_name.value }}"{% endif %}
+                                       {% if signup_form.first_name.field.required %}required{% endif %}>
+                            </div>
+                            <div class="input-wr">
+                                <label>Last Name</label>
+                                <input class="input-elem-form"
+                                       type="text"
+                                       name="{{ signup_form.last_name.name }}"
+                                       {% if signup_form.last_name.initial != None %}value="{{ signup_form.last_name.value }}"{% endif %}
+                                       {% if signup_form.last_name.field.required %}required{% endif %}>
+                            </div>
+                        </div>
+                        <div class="input-wr">
+                            <label>Email</label>
+                            <input class="input-elem-form"
+                                   type="email"
+                                   name="{{ signup_form.email.name }}"
+                                   {% if signup_form.email.initial != None %}value="{{ signup_form.email.value }}"{% endif %}
+                                   {% if signup_form.email.field.required %}required{% endif %}>
+                        </div>
+                        <div class="input-wr password-eye">
+                            <label>Password</label>
+                            <input id="password-field"
+                                   class="input-elem-form"
+                                   type="password"
+                                   name="{{ signup_form.password.name }}"
+                                   {% if signup_form.password.initial != None %}value="{{ signup_form.password.value }}"{% endif %}
+                                   {% if signup_form.password.field.required %}required{% endif %}>
+                            <span toggle="#password-field" class="toggle-password">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="17" viewBox="0 0 28 17">
+    <path fill="#505363" fill-rule="nonzero"
+          d="M13.996.042C8.648.042 3.798 2.967.219 7.72c-.292.39-.292.933 0 1.323 3.579 4.758 8.429 7.684 13.777 7.684 5.348 0 10.198-2.926 13.776-7.679.292-.389.292-.933 0-1.322C24.194 2.967 19.344.042 13.996.042zm.383 14.217a5.89 5.89 0 0 1-6.258-6.258c.183-2.932 2.56-5.308 5.491-5.492a5.89 5.89 0 0 1 6.259 6.259c-.19 2.926-2.566 5.302-5.492 5.491zm-.177-2.714a3.165 3.165 0 0 1-3.367-3.367 3.184 3.184 0 0 1 2.96-2.96 3.165 3.165 0 0 1 3.367 3.367 3.184 3.184 0 0 1-2.96 2.96z"/>
+</svg>
+                    </span>
+                        </div>
+                        <div class="button-box">
+                            <button type="submit" class="button button-purple">SIGN UP</button>
+                        </div>
+                        <div class="line">
+                            <span>Or</span>
+                        </div>
+                        <div class="button-box">
+                            <button type="submit" class="button button-blue">
+                                <i class="fa fa-facebook" aria-hidden="true"></i>
+                                SIGN UP WITH FACEBOOK
+                            </button>
+                        </div>
+                        <div class="checkbox-i">
+                            <input type="checkbox">
+                            <label>
+                                <div class="l-side">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                    <p>Subscribe to our newsletter</p>
+                                </div>
+                            </label>
+                        </div>
+                        <p>By having an account you are agreeing with our <br/>
+                            <a href="">Terms and Conditions</a> and <a href="">Privacy Statement</a></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="reg-confirm-popup popup">
+        <div class="overlay"></div>
+        <div class="popup-inner">
+            <div class="done">
+                <img src="{{ STATIC_PREFIX }}academy_site/img/done.svg" alt="">
+            </div>
+            <p>Thanks for registeration, <br/>
+                we sent you a confirmation on email</p>
+            <div class="button-box close">
+                <button type="submit" class="button button-purple">OK,THANKS</button>
+            </div>
+        </div>
+    </div>
+    <div class="forgot-password-popup popup">
+        <div class="overlay"></div>
+        <div class="popup-inner">
+            <ul class="password-tabs">
+                <a href="#sign-in" class="sign-in">SIGN IN</a>
+                <a href="#sign-up" class="sign-up">SIGN UP</a>
+            </ul>
+            <div class="content">
+                <div class="inner">
+                    <form method="post" action="{% url 'academy_site:reset_password' %}">
+                        {% csrf_token %}
+                        <div class="title">
+                            Restore password
+                        </div>
+                        <div class="input-wr">
+                            <label>Email</label>
+                            <input class="input-elem-form"
+                                   type="email"
+                                   name="{{ reset_password_form.email.name }}"
+                                   {% if reset_password_form.email.initial != None %}value="{{ reset_password_form.email.value }}"{% endif %}
+                                   {% if reset_password_form.email.field.required %}required{% endif %}>
+                        </div>
+                        <div class="button-box">
+                            <button type="submit" class="button button-purple">Restore password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endif %}

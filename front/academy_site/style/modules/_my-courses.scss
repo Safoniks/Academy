@@ -21,6 +21,7 @@
         }
       }
       .r-side{
+        flex-basis: 60%;
         .button-boxes{
           margin: 11px 0 16px 0;
           display: flex;
@@ -50,13 +51,22 @@
           font-size: 16px;
           font-weight: bold;
           color: #d0021b;
-            span{
-              &:nth-child(2){
-               span{
-                 border-bottom: 1px solid #d0021b;
-               }
-              }
-            }
+           .button{
+             color: #d0021b;
+             border-bottom: 1px solid #d0021b;
+             line-height: 16px;
+             min-width: 0;
+             border-radius: 0;
+             text-transform: none;
+             display: inline-block;
+             font-size: 16px;
+             font-weight: bold;
+             text-align: center;
+             transition: .3s;
+             cursor: pointer;
+             outline: none !important;
+             padding: 0;
+           }
         }
       }
     }
@@ -99,7 +109,7 @@
         .course-name{
           font-weight: bold;
           color: #505363;
-          span{
+          a{
             border-bottom: 1px solid #505363;
           }
         }

@@ -2,25 +2,160 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
 {% block content %}
-    <div>
-        <h2>Cities</h2>
-        <ul>
-            {% for city in cities %}
-                <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;">
-                    <a href="{{ city.get_site_url }}">
-                        <p>name: {{ city.name }}</p>
-                        <p>description: {{ city.short_description }}</p>
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div>
-        <h2>Contact us</h2>
-        <form method="post" action="{% url 'academy_site:contact_us' %}">
-            {% csrf_token %}
-            {{ contact_us_form.as_p }}
-            <button type="submit">Send</button>
-        </form>
+    <div class="main-count">
+        <div class="main-block">
+            <div class="wr">
+                <div class="l-side">
+                    <div class="main-title">
+                        HERSTELACADEMIE
+                    </div>
+                    <div class="main-sub-title">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec volutpat, augue ac vestibulum
+                        facilisis, nisl mauris malesuada nunc, et dapibus dolor risus ac est. Sed sapien sem, pretium ac
+                        egestas non, facilisis a libero. Vestibulum ultrices dapibus odio in consectetur. Curabitur
+                        vulputate pretium quam, ac egestas arcu venenatis eu. Ut et lacus eu ex pretium pharetra ut nec
+                        ligula. Sed ac molestie nunc. Pellentesque nec egestas nibh. Praesent maximus facilisis nisl id
+                        pharetra. Quisque molestie lectus at purus luctus, quis ultrices ipsum pretium.
+                    </div>
+                    <div class="button-box">
+                        <a href="#cities-and-contacts" class="button button-purple">Choose your city</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <section class="about">
+            <div class="wr">
+                <div class="b-title">
+                    About
+                </div>
+                <div class="about-us">
+                    <div class="l-side">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec volutpat, augue ac vestibulum
+                            facilisis, nisl mauris malesuada nunc, et dapibus dolor risus ac est. Sed sapien sem,
+                            pretium ac
+                            egestas non, facilisis a libero. <br/>
+                            Vestibulum ultrices dapibus odio in consectetur. Curabitur vulputate pretium quam, ac
+                            egestas
+                            arcu
+                            venenatis eu. Ut et lacus eu ex pretium pharetra ut nec ligula. Sed ac molestie nunc.
+                            Pellentesque
+                            nec egestas nibh. Praesent maximus facilisis nisl id pharetra. Quisque molestie lectus at
+                            purus
+                            luctus, quis ultrices ipsum pretium. Duis sollicitudin mi diam, laoreet auctor neque ornare
+                            a.
+                            Nam
+                            eleifend ultrices est non placerat. Sed vestibulum eros non enim laoreet auctor. Phasellus
+                            vel
+                            velit
+                            magna. <br/>
+                            Morbi sapien elit, dapibus ac sollicitudin aliquam, scelerisque sed magna. <br/>
+                            Sed tristique fringilla ex, et egestas lacus varius ac.Lorem ipsum dolor sit amet,
+                            consectetur
+                            adipiscing elit. Donec volutpat, augue ac vestibulum facilisis, nisl mauris malesuada nunc,
+                            et
+                            dapibus dolor risus ac est. Sed sapien sem, pretium ac egestas non, facilisis a libero.
+                            <br/>
+                            Vestibulum
+                            ultrices dapibus odio in consectetur. Curabitur vulputate pretium quam, ac egestas arcu
+                            venenatis
+                            eu. Ut et lacus eu ex pretium pharetra ut nec ligula. Sed ac molestie nunc. Pellentesque nec
+                            egestas
+                            nibh. Praesent maximus facilisis nisl id pharetra. Quisque molestie lectus at purus luctus,
+                            quis
+                            ultrices ipsum pretium. Duis sollicitudin mi diam, laoreet auctor neque ornare a. Nam
+                            eleifend
+                            ultrices est non placerat. Sed vestibulum eros non enim laoreet auctor. Phasellus vel velit
+                            magna. <br/>
+                            Morbi sapien elit, dapibus ac sollicitudin aliquam, scelerisque sed magna. <br/> Sed
+                            tristique
+                            fringilla
+                            ex, et egestas lacus varius ac.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                            Donec
+                            volutpat, augue ac vestibulum facilisis, nisl mauris malesuada nunc, et dapibus dolor risus
+                            ac
+                            est.
+                            Sed sapien sem, pretium ac egestas non, facilisis a libero. Vestibulum ultrices dapibus odio
+                            in
+                            consectetur. Curabitur vulputate pretium quam, ac egestas arcu venenatis eu. Ut et lacus eu
+                            ex
+                            pretium pharetra ut nec ligula. Sed ac molestie nunc. Pellentesque nec egestas nibh.
+                            Praesent
+                            maximus facilisis nisl id pharetra. Quisque molestie lectus at purus luctus, quis ultrices
+                            ipsum
+                            pretium. Duis sollicitudin mi diam, laoreet auctor neque ornare a. Nam eleifend ultrices est
+                            non
+                            placerat. Sed vestibulum eros non enim laoreet auctor. Phasellus vel velit magna. Morbi
+                            sapien
+                            elit,
+                            dapibus ac sollicitudin aliquam, scelerisque sed magna. Sed tristique fringilla ex, et
+                            egestas
+                            lacus
+                            varius ac.
+                        </p>
+                    </div>
+                    <div class="r-side">
+                        <iframe width="427" height="240" src="https://www.youtube.com/embed/F3X2OA6v9SY"
+                                frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="cities-and-contacts" id="cities-and-contacts">
+            <div class="wr">
+                <div class="b-title">Cities and Contacts</div>
+                <p>Choose the city where you want to see the courses</p>
+                <ul class="features-list">
+                    {% for city in cities %}
+                        <li>
+                            <a href="{{ city.get_site_url }}" class="featurest-list-title">{{ city.name }}</a>
+                            <p>{{ city.short_description }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+        <section class="contact-us" id="contact-us">
+            <div class="wr">
+                <div class="b-title">
+                    Contact us
+                </div>
+                <form name="contact-form" class="contact-form" method="post"
+                      action="{% url 'academy_site:contact_us' %}">
+                    {% csrf_token %}
+                    <div class="input-top">
+                        {% for hidden_field in contact_us_form.hidden_fields %}
+                            {{ hidden_field.errors }}
+                            {{ hidden_field }}
+                        {% endfor %}
+                        <div class="input-wr">
+                            <label>Name</label>
+                            <input class="input-elem-form"
+                                   type="text"
+                                   name="{{ contact_us_form.name.name }}"
+                                   {% if contact_us_form.name.initial != None %}value="{{ contact_us_form.name.value }}"{% endif %}
+                                   {% if contact_us_form.name.field.required %}required{% endif %}>
+                        </div>
+                        <div class="input-wr">
+                            <label>Email</label>
+                            <input class="input-elem-form"
+                                   type="email"
+                                   name="{{ contact_us_form.email.name }}"
+                                   {% if contact_us_form.email.initial != None %}value="{{ contact_us_form.email.value }}"{% endif %}
+                                   {% if contact_us_form.email.field.required %}required{% endif %}>
+                        </div>
+                    </div>
+                    <div class="input-wr">
+                        <label>Massege</label>
+                        <textarea rows="10" cols="42"
+                                  name="{{ contact_us_form.message.name }}"
+                                  {% if contact_us_form.message.field.required %}required{% endif %}></textarea>
+                    </div>
+                    <div class="button-box">
+                        <button type="submit" class="button button-purple" id="form_submit">Send</button>
+                    </div>
+                </form>
+            </div>
+        </section>
     </div>
 {% endblock %}

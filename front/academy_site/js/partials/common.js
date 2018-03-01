@@ -1,5 +1,16 @@
 ﻿$(document).ready(function () {
 
+    $('a[href^="#cities-and-contacts"], a[href^="#contact-us"]').on('click',function (e) {
+        e.preventDefault();
+        var target = this.hash;
+        var $target = $(target);
+        $('html, body').stop().animate({
+            'scrollTop':  $target.offset().top //no need of parseInt here
+        }, 900, 'swing', function () {
+            window.location.hash = target;
+        });
+    });
+
     $(function(){
         $('#profile_image').change( function(e) {
 
@@ -17,11 +28,13 @@
     }
 
     $('a[href="#sign-in"]').on('click', function () {
+        $('.forgot-password-popup').removeClass('open')
         $('.login-popup').addClass('open')
         setTabActive('tab-1')
     });
 
     $('a[href="#sign-up"]').on('click', function () {
+        $('.forgot-password-popup').removeClass('open')
         $('.login-popup').addClass('open')
         setTabActive('tab-2')
     });
@@ -35,18 +48,32 @@
         setTabActive(tab_id)
     })
 
-    // //reg-confirm//
-    // $('').on('click', function () {
-    //     $('.done-popup').addClass('open')
-    // })
-    //
-    // $('.done-popup .overlay').on('click', function () {
-    //     $('.done-popup').removeClass('open')
-    // });
+    //subscribe//
+    $('.done-button').on('click', function () {
+        $('.done-popup').addClass('open')
+    })
+
+    $('.done-popup .overlay').on('click', function () {
+        $('.done-popup').removeClass('open')
+    });
+    $('.ok-thanks').on('click', function () {
+        $('.done-popup').removeClass('open')
+    });
+    //subscribe and signin//
+    $('.password-button').on('click', function () {
+        $('.password-popup').addClass('open')
+    })
+
+    $('.password-popup .overlay').on('click', function () {
+        $('.password-popup').removeClass('open')
+    });
+    $('.close').on('click', function () {
+        $('.password-popup').removeClass('open')
+    });
 
     //teacher-popup//
     $('.teacher-photo').on('click', function () {
-        $('.teacher-popup').addClass('open')
+        $(this).parent().find('.teacher-popup').addClass('open')
     })
 
     $('.teacher-popup .overlay').on('click', function () {
@@ -55,7 +82,6 @@
     $('.close').on('click', function () {
         $('.teacher-popup').removeClass('open')
     });
-
 
     //contact-us popup//
     $('.open-contact-us').on('click', function () {
@@ -116,7 +142,30 @@
         }
     });
 
+    $('.teacher-more').on('click', function () {
+        $(this).parent().next($('.teacher-popup')).addClass('open')
+    })
 
+    $('.teacher-popup .overlay').on('click', function () {
+        $('.teacher-popup').removeClass('open')
+    });
+    $('.close').on('click', function () {
+        $('.teacher-popup').removeClass('open')
+    });
+
+
+
+    //forgot-password//
+    $('.forgot-password').on('click', function () {
+        $('.forgot-password-popup ').addClass('open')
+        $('.login-popup').removeClass('open')
+
+    })
+
+    $('.forgot-password-popup  .overlay').on('click', function () {
+        $('.forgot-password-popup ').removeClass('open')
+    });
+    
 });
 
 

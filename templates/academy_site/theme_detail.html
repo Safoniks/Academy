@@ -2,22 +2,238 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
 {% block content %}
-    <div>
-        <p>name: {{ theme.name }}</p>
-        <p>description: {{ theme.description }}</p>
-    </div>
-    <div>
-        <h2>Courses</h2>
-        <ul>
-            {% for course in courses %}
-                <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;
-                        background: url({{ course.photo.url }}) center; background-size: cover;">
-                    <a href="{{ course.get_site_url }}" style="color: white">
-                        <p>name: {{ course.name }}</p>
-                        <p>seats: {{ course.remaining_seats }}</p>
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
+    <div class="theme-name">
+        <div class="about-theme">
+            <div class="wr">
+                <div class="themes-name b-title">
+                    {{ theme.name }} | Courses
+                </div>
+                <p>{{ theme.description }}</p>
+                <div class="input-wr">
+                <span>
+                    <img src="{{ STATIC_PREFIX }}academy_site/img/search.svg" alt="">
+                <input type="search" placeholder="Search lessons">
+                </span>
+                </div>
+            </div>
+        </div>
+        <div class="about-theme-wr">
+            <div class="wr">
+                <div class="filter-checkbox">
+                    <div class="title-filter">
+                        Filters
+                    </div>
+                    <div>
+                        <div class="title-head">
+                            Theme
+                        </div>
+                        <div>
+                            <div class="checkbox-i">
+                                <input type="checkbox" checked>
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="title-head">
+                            Theme
+                        </div>
+                        <div>
+                            <div class="checkbox-i">
+                                <input type="checkbox" checked>
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="title-head">
+                            Theme
+                        </div>
+                        <div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="title-head">
+                            Theme
+                        </div>
+                        <div>
+                            <div class="checkbox-i">
+                                <input type="checkbox">
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="checkbox-i">
+                                <input type="checkbox" checked>
+                                <label>
+                                    <div class="filters">
+                                    <span class="checkbox">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                </span>
+                                        <div class="name">Art and Design</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="r-side">
+                    <ul>
+                        {% for course in courses %}
+                            <li><a href="{{ course.get_site_url }}">
+                                <div class="course-img" style="background-image: url({{ course.photo.url }})">
+                                    <div class="inner">
+                                        <div class="course-name">{{ course.name }}</div>
+                                        <div class="course-data">
+                                            <img src="{{ STATIC_PREFIX }}academy_site/img/whitecalend.svg" alt="">
+                                            <span>
+                                                {% if course.next_lesson %}
+                                                    {{ course.next_lesson.date }}
+                                                {% else %}
+                                                    <span>ARCHIVED</span>
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="number">
+                                            <img src="{{ STATIC_PREFIX }}academy_site/img/whiteman.svg" alt="">
+                                            <span>{{ course.remaining_seats }} places free</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}

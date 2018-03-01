@@ -2,36 +2,94 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
 {% block content %}
-    {% if not user.siteuser.is_confirmed %}
-        <p><a href="{% url 'academy_site:new_confirmation_code' %}">[SEND NEW CONFIRMATION CODE]</a></p>
-    {% endif %}
-    <p><a href="{% url 'academy_site:profile_edit' %}">[EDIT]</a></p>
-    <p><a href="{% url 'academy_site:logout' %}">[LOGOUT]</a></p>
-    <div>
-        <h2>My courses</h2>
-        <table>
-            <tr>
-                <th>COURSE</th>
-                <th>NEXT LESSON</th>
-                <th>RATE</th>
-            </tr>
-            {% for course_subscribe in course_subscribes %}
-                <tr>
-                    <td><a href="{{ course_subscribe.course.get_site_url }}">{{ course_subscribe.course.name }}</a></td>
-                    <td>
-                        {% if course_subscribe.course.next_lesson %}
-                            {{ course_subscribe.course.next_lesson.date }}
-                        {% else %}
-                            <span>ARCHIVED</span>
+    <div class="main-content">
+        <div class="my-courses">
+            <div class="wr">
+                <div class="profile">
+                    <div class="l-side">
+                        <div class="avatar-preview">
+                            <div id="imagePreview" style="background-image: url(
+                                    {% if user.photo %}
+                                        {{ user.photo.url }}
+                                    {% else %}
+                                        {{ STATIC_PREFIX }}academy_site/img/photo.png
+                                    {% endif %}
+                                    );">
+                            </div>
+                        </div>
+                    </div>
+                    <p></p>
+                    <div class="r-side">
+                        <div class="b-title">{{ user.full_name }}</div>
+                        <div class="button-boxes">
+                            <div class="button-box">
+                                <a class="button button-purple" href="{% url 'academy_site:profile_edit' %}">Edit my
+                                    info</a>
+                            </div>
+                            <div class="button-box">
+                                <a class="button button-red" href="{% url 'academy_site:logout' %}">Logout</a>
+                            </div>
+                        </div>
+                        {% if not user.siteuser.is_confirmed %}
+                            <div class="text-box">
+                                <span>Please confirm your email!</span>
+                                <a class="button" href="{% url 'academy_site:new_confirmation_code' %}">Resend mail</a>
+                            </div>
                         {% endif %}
-                    </td>
-                    <td>{{ course_subscribe.course.rate }}</td>
-                    <td><a {% if course_subscribe.is_liked %}style="color: green;" {% endif %}
-                           href="{{ course_subscribe.course.get_like_url }}">[LIKE]</a></td>
-                    <td><a {% if course_subscribe.is_disliked %}style="color: red;" {% endif %}
-                           href="{{ course_subscribe.course.get_dislike_url }}">[DISLIKE]</a></td>
-                </tr>
-            {% endfor %}
-        </table>
+                    </div>
+                </div>
+                <div class="course-title">
+                    My courses
+                </div>
+                <ul>
+                    <li>
+                        <div class="course-name-head">
+                            Course
+                        </div>
+                        <div class="course-data-head">
+                            data
+                        </div>
+                    </li>
+                    {% for course_subscribe in course_subscribes %}
+                        <li>
+                            <div class="course-name">
+                                <a href="{{ course_subscribe.course.get_site_url }}">{{ course_subscribe.course.name }}</a>
+                            </div>
+                            <div class="course-data">
+                                {% if course_subscribe.course.next_lesson %}
+                                    {{ course_subscribe.course.next_lesson.date }}
+                                {% else %}
+                                    <span>ARCHIVED</span>
+                                {% endif %}
+                            </div>
+                            <div class="thumbs">
+                                <div class="top-thumb">
+                                    <a href="{{ course_subscribe.course.get_like_url }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="23" height="18"
+                                             viewBox="0 0 23 18">
+                                            <g fill="{% if course_subscribe.is_liked %}#7ED321{% else %}grey{% endif %}"
+                                               fill-rule="evenodd">
+                                                <path d="M5 6H1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1M22.768 5.36A1.002 1.002 0 0 0 22 5h-6V1a1 1 0 0 0-1-1h-3a.998.998 0 0 0-.918.607L8 7v9.477l3.629 1.45c.118.048.244.073.37.073h8a1 1 0 0 0 .985-.822l2-11a.996.996 0 0 0-.216-.82"/>
+                                            </g>
+                                        </svg>
+                                    </a>
+                                </div>
+                                <div class="bottom-thumb">
+                                    <a href="{{ course_subscribe.course.get_dislike_url }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="23" height="18"
+                                             viewBox="0 0 23 18">
+                                            <g fill="{% if course_subscribe.is_disliked %}#D0021B{% else %}grey{% endif %}"
+                                               fill-rule="evenodd">
+                                                <path d="M18 12h4a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1M.232 12.642c.19.227.471.359.768.359h6v4a1 1 0 0 0 1 1h3a.998.998 0 0 0 .918-.607L15 11V1.523L11.371.072a1.003 1.003 0 0 0-.37-.071H3a1 1 0 0 0-.985.82l-2 11a.997.997 0 0 0 .216.82"/>
+                                            </g>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
 {% endblock %}

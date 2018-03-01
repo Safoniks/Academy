@@ -82,7 +82,7 @@ class CityForm(forms.Form):
 
     def clean_video(self):
         video = self.cleaned_data['video']
-        if not video.startswith('https://www.youtube.com/embed/'):
+        if video and not video.startswith('https://www.youtube.com/embed/'):
             raise ValidationError("Invalid video url.")
         return video
 

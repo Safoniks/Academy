@@ -2,78 +2,217 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
 {% block content %}
-    <h2>{{ course.name }}</h2>
-    {% if course.is_sold_out %}<strong>SOLD OUT</strong>{% endif %}
-    {% if course.is_archived %}<strong>ARCHIVED</strong>{% endif %}
-    <strong>RATE: {{ course.rate }}</strong>
-    <div>
-        <p>description: {{ course.description }}</p>
-        <p>practise_info: {{ course.practise_info }}</p>
-        <p>location: {{ course.location }}</p>
-        <p>price: {{ course.price }}</p>
-        <p>remaining_seats: {{ course.remaining_seats }}</p>
-        <p>status: {{ course.status }}</p>
-    </div>
-    <h3>Lessons</h3>
-    <ul>
-        {% for lesson in course.lesson_set.all %}
-            {% if lesson.is_past %}
-                <li><strike>{{ lesson.date }}</strike></li>
-            {% else %}
-                <li>{{ lesson.date }}</li>
-            {% endif %}
-
-        {% endfor %}
-    </ul>
-    <div>
-        <div>
-            <h2>Partners</h2>
-            <ul>
-                {% for partner in course.partners.all %}
-                    <li style="display: inline-block;margin-right: 2%; text-align: center;">
-                        <p>{{ partner.name }}</p>
-                        <a href="{{ partner.link }}">
-                            <img src="{{ partner.logo.url }}" alt="{{ partner.name }}" title="{{ partner.name }}"
-                                 style="width: 50px; height: 50px;">
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div>
-            <h2>Teachers</h2>
-            <ul>
+    <div class="course">
+        <div class="wr">
+            <div class="top-side">
+                <div class="l-side">
+                    <div class="top-box">
+                        <div class="b-title">{{ course.name }}</div>
+                        <div class="current-position">
+                            {% if course.status == 'available' %}
+                                <div class="active">
+                                    Active
+                                </div>
+                            {% endif %}
+                            {% if course.status == 'canceled' %}
+                                <div class="canceled">
+                                    Canceled
+                                </div>
+                            {% endif %}
+                            {% if course.is_sold_out %}
+                                <div class="archived">
+                                    Sold Out
+                                </div>
+                            {% endif %}
+                            {% if course.is_archived %}
+                                <div class="archived">
+                                    Archived
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-i">
+                            <div class="course-start">
+                                <div class="icon">
+                                    <img src="{{ STATIC_PREFIX }}academy_site/img/calendar.svg" alt="">
+                                </div>
+                                <div class="text">
+                                    When
+                                </div>
+                            </div>
+                            {% for lesson in course.lesson_set.all|slice:":2" %}
+                                {% if lesson.is_past %}
+                                    <div class="data-end">
+                                        <strike>{{ lesson.date }}</strike>
+                                    </div>
+                                {% else %}
+                                    <div class="data-end">{{ lesson.date }}</div>
+                                {% endif %}
+                            {% endfor %}
+                            <a href="#" class="lessons">See all lessons</a>
+                        </div>
+                        <div class="item-i">
+                            <div class="course-start">
+                                <div class="icon">
+                                    <img src="{{ STATIC_PREFIX }}academy_site/img/location.svg" alt="">
+                                </div>
+                                <div class="text">
+                                    Location
+                                </div>
+                            </div>
+                            <ul class="location">
+                                <li>{{ course.location }}</li>
+                            </ul>
+                        </div>
+                        <div class="item-i">
+                            <div class="course-start">
+                                <div class="icon">
+                                    <img src="{{ STATIC_PREFIX }}academy_site/img/price.svg" alt="">
+                                </div>
+                                <div class="text">
+                                    Price
+                                </div>
+                            </div>
+                            <div class="price">
+                                {{ course.price_description }} - {{ course.price }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="r-side">
+                    <div class="free-seats">
+                        <div class="seats">
+                            <img src="{{ STATIC_PREFIX }}academy_site/img/people.svg" alt="">
+                            <div class="rest">
+                                rest <br/>
+                                {{ course.remaining_seats }} seats
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="title">
+                Description
+            </div>
+            <p>{{ course.description }}</p>
+            <div class="teachers">
+                <span>Teachers:</span>
                 {% for auth_teacher in course.teachers.all %}
-                    <li style="display: inline-block;margin-right: 2%; text-align: center; max-width: 15%;">
-                        <p>NAME: {{ auth_teacher.full_name }}</p>
-                        <p>EMAIL: {{ auth_teacher.email }}</p>
-                        <p>
-                            LINKS:
-                            {% if auth_teacher.adminprofile.facebook_link %}
-                                <a href="{{ auth_teacher.adminprofile.facebook_link }}">facebook_link</a>
-                            {% endif %}
-                            {% if auth_teacher.adminprofile.instagram_link %}
-                                <a href="{{ auth_teacher.adminprofile.instagram_link }}">instagram_link</a>
-                            {% endif %}
-                            {% if auth_teacher.adminprofile.other_link %}
-                                <a href="{{ auth_teacher.adminprofile.other_link }}">other_link</a>
-                            {% endif %}
-                        </p>
-                        <p>PHONE: {{ auth_teacher.adminprofile.phone }}</p>
-                        <p>BIO: {{ auth_teacher.adminprofile.bio }}</p>
-                        {% if auth_teacher.photo %}
-                            <img src="{{ auth_teacher.photo.url }}" style="width: 50px; height: 50px;">{% endif %}
+                    <span>
+                    <a href="#" class="teacher-more">
+                        {{ auth_teacher.full_name }}</a>{% if not forloop.last %},{% endif %}
+                    </span>
+                    <div class="teacher-popup popup">
+                        <div class="overlay"></div>
+                        <div class="popup-inner">
+                            <div class="close"></div>
+                            <div class="teacher-info">
+                                <div class="l-side">
+                                    <div class="teacher-photo">
+                                        <img src="
+                                                            {% if auth_teacher.photo %}
+                                                            {{ auth_teacher.photo.url }}
+                                                            {% else %}
+                                                            {{ STATIC_PREFIX }}academy_site/img/photo.png
+                                                            {% endif %}" alt="">
+                                    </div>
+                                </div>
+                                <div class="r-side">
+                                    <div class="teacher-name">{{ auth_teacher.full_name }}</div>
+                                    <div class="contacts">
+                                        {% if auth_teacher.adminprofile.phone %}
+                                            <div class="contact-i">
+                                                <div class="icon">
+                                                    <img src="{{ STATIC_PREFIX }}academy_site/img/tel.svg"
+                                                         alt="">
+                                                </div>
+                                                <a href="tel:{{ auth_teacher.adminprofile.phone }}">{{ auth_teacher.adminprofile.phone }}</a>
+                                            </div>
+                                        {% endif %}
+                                        {% if auth_teacher.email %}
+                                            <div class="contact-i">
+                                                <div class="icon">
+                                                    <img src="{{ STATIC_PREFIX }}academy_site/img/mail.svg"
+                                                         alt="">
+                                                </div>
+                                                <a href="mailto:{{ auth_teacher.email }}"
+                                                   class="mail">{{ auth_teacher.email }}</a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <ul>
+                                {% if auth_teacher.adminprofile.facebook_link %}
+                                    <li><a href="{{ auth_teacher.adminprofile.facebook_link }}">
+                                        <img src="{{ STATIC_PREFIX }}academy_site/img/fb.svg" alt="">
+                                    </a></li>
+                                {% endif %}
+                                {% if auth_teacher.adminprofile.instagram_link %}
+                                    <li><a href="{{ auth_teacher.adminprofile.instagram_link }}">
+                                        <img src="{{ STATIC_PREFIX }}academy_site/img/insta.svg" alt="">
+                                    </a></li>
+                                {% endif %}
+                                {% if auth_teacher.adminprofile.other_link %}
+                                    <li><a href="{{ auth_teacher.adminprofile.other_link }}">
+                                        <img src="{{ STATIC_PREFIX }}academy_site/img/google.svg" alt="">
+                                    </a></li>
+                                {% endif %}
+                            </ul>
+                            <p>{{ auth_teacher.adminprofile.bio }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="title">
+                Practise info
+            </div>
+            <p>{{ course.practise_info }}</p>
+            <div class="button-box">
+                {% if subscribed %}
+                    <a href="{{ course.get_unsubscribe_url }}" class="button button-purple">Unsubscribe</a>
+                {% else %}
+                    {% if not course.is_sold_out and not course.is_archived %}
+                        <a href="{{ course.get_signup_url }}" class="button button-purple">I will go</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="all-lessons-popup popup">
+        <div class="overlay"></div>
+        <div class="popup-inner">
+            <div class="top-side">
+                <div class="title">
+                    Lessons dates
+                </div>
+                <div class="close"></div>
+            </div>
+            <div class="lessons-date">
+                {% for lesson in course.lesson_set.all %}
+                    {% if lesson.is_past %}
+                        <div><strike>{{ lesson.date }}</strike></div>
+                    {% else %}
+                        <div>{{ lesson.date }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="partners">
+        <div class="wr">
+            <div class="b-title">
+                Partners
+            </div>
+            <ul class="partners-list">
+                {% for partner in course.partners.all %}
+                    <li class="partners-i">
+                        <a href="{{ partner.link }}"
+                           style="background-image: url({{ partner.logo.url }});" title="{{ partner.name }}"></a>
                     </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
-
-    {% if subscribed %}
-        <div><a href="{{ course.get_unsubscribe_url }}">[UNSUBSCRIBE]</a></div>
-    {% else %}
-        {% if not course.is_sold_out and not course.is_archived %}
-            <div><a href="{{ course.get_signup_url }}">[I WILL GO]</a></div>
-        {% endif %}
-    {% endif %}
 {% endblock %}

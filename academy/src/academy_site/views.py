@@ -38,6 +38,27 @@ def home(request):
     return render(request, 'academy_site/home.html', context)
 
 
+def workgroup(request):
+    context = {
+        'user': request.user,
+        'signup_form': SignUpForm(),
+        'signin_form': SignInForm(),
+        'contact_us_form': ContactUsForm(email_to=settings.SITE_SETTINGS['contact_email']),
+        'reset_password_form': ResetPasswordForm(),
+    }
+    return render(request, 'academy_site/workgroup.html', context)
+
+
+def werkboek(request):
+    context = {
+        'user': request.user,
+        'signup_form': SignUpForm(),
+        'signin_form': SignInForm(),
+        'reset_password_form': ResetPasswordForm(),
+    }
+    return render(request, 'academy_site/werkboek.html', context)
+
+
 @anonymous_required(redirect_url='academy_site:home')
 def signup(request):
     if request.method == 'POST':
@@ -52,6 +73,7 @@ def signup(request):
             messages.success(request, 'Підтвердження емейла на почті')
         else:
             messages.error(request, 'Error')
+        print(signup_form.errors)
         redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_site:home')
         return redirect(redirect_to)
     else:

@@ -2,80 +2,245 @@
 {% load static %}{% get_static_prefix as STATIC_PREFIX %}
 
 {% block content %}
-    <div>
-        <p>name: {{ city.name }}</p>
-        <p>description: {{ city.full_description }}</p>
-        <p>phone: {{ city.phone }}</p>
-        <p>email: {{ city.email }}</p>
-        <p>location: {{ city.location }}</p>
-    {% if city.photo %}
-        <img src="{{ city.photo.url }}" alt="" style="width: 500px; height: 350px;">
-    {% endif %}
-    {% if city.video %}
-        <iframe width="560" height="315" src="{{ city.video }}"
-                frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    {% endif %}
-    </div>
-    <div>
-        <h2>Themes</h2>
-        <ul>
-            {% for theme in city.theme_set.all %}
-                <li style="display: inline-block; width: 20%; margin-right: 5%; text-align: center;
-                        background: url({{ theme.photo.url }}) center; background-size: cover;">
-                    <a href="{{ theme.get_site_url }}" style="color: white">
-                        <p>name: {{ theme.name }}</p>
-                        <p>description: {{ theme.description }}</p>
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div>
-        <h2>Teachers</h2>
-        <ul>
-            {% for auth_teacher in teachers %}
-                <li style="display: inline-block;margin-right: 2%; text-align: center; max-width: 15%;">
-                <p>NAME: {{ auth_teacher.full_name }}</p>
-                <p>EMAIL: {{ auth_teacher.email }}</p>
-                    <p>
-                        LINKS:
-                        {% if auth_teacher.adminprofile.facebook_link %}
-                            <a href="{{ auth_teacher.adminprofile.facebook_link }}">facebook_link</a>
+    <div class="main-content">
+        <div class="region-name">
+            <div class="wr">
+                <div class="region">
+                    <div class="l-side">
+                        <div class="b-title">
+                            HERSTEL<span>ACADEMIE</span>
+                        </div>
+                        <div class="city">{{ city.name }}</div>
+                        <p>{{ city.full_description }}</p>
+                    </div>
+                    <div class="r-side">
+                        {% if city.photo %}
+                            <img src="{{ city.photo.url }}" alt="" style="width: 427px; height: 240px;">
                         {% endif %}
-                        {% if auth_teacher.adminprofile.instagram_link %}
-                            <a href="{{ auth_teacher.adminprofile.instagram_link }}">instagram_link</a>
+                        {% if city.video %}
+                            <iframe width="427" height="240" src="{{ city.video }}"
+                                    frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                         {% endif %}
-                        {% if auth_teacher.adminprofile.other_link %}
-                            <a href="{{ auth_teacher.adminprofile.other_link }}">other_link</a>
-                        {% endif %}
-                    </p>
-                <p>PHONE: {{ auth_teacher.adminprofile.phone }}</p>
-                    <p>BIO: {{ auth_teacher.adminprofile.bio }}</p>
-                {% if auth_teacher.photo %}<img src="{{ auth_teacher.photo.url }}" style="width: 50px; height: 50px;">{% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div>
-        <h2>Partners</h2>
-        <ul>
-            {% for partner in city.partners.all %}
-                <li style="display: inline-block;margin-right: 2%; text-align: center;">
-                    <p>{{ partner.name }}</p>
-                    <a href="{{ partner.link }}">
-                        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}" title="{{ partner.name }}"
-                             style="width: 50px; height: 50px;">
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div>
-        <h2>Contact us</h2>
-        <form method="post" action="{% url 'academy_site:contact_us' %}">
-            {% csrf_token %}
-            {{ contact_us_form.as_p }}
-            <button type="submit">Send</button>
-        </form>
+                    </div>
+                </div>
+                <div class="contacts-city">
+                    <div class="contact-item">
+                        <div class="icon">
+                            <img src="{{ STATIC_PREFIX }}academy_site/img/tel.svg" alt="">
+                        </div>
+                        <a href="tel:{{ city.phone }}">{{ city.phone }}</a>
+                    </div>
+                    <div class="contact-item">
+                        <div class="icon">
+                            <img src="{{ STATIC_PREFIX }}academy_site/img/mail.svg" alt="">
+                        </div>
+                        <a href="mailto:{{ city.email }}" class="mail">{{ city.email }}</a>
+                    </div>
+                    <div class="contact-item">
+                        <div class="icon">
+                            <img src="{{ STATIC_PREFIX }}academy_site/img/location.svg" alt="">
+                        </div>
+                        <span>{{ city.location }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="themes">
+            <div class="wr">
+                <div class="b-title">
+                    Themes
+                </div>
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec volutpat, augue ac vestibulum
+                    facilisis,
+                    nisl
+                    mauris malesuada nunc, et dapibus dolor risus ac est. Sed sapien sem, pretium ac egestas non,
+                    facilisis
+                    a
+                    libero. Vestibulum ultrices dapibus odio in consectetur.
+                </p>
+                <ul class="themes-list">
+                    {% for theme in city.theme_set.all %}
+                        <li>
+                            <a href="{{ theme.get_site_url }}">
+                                <div class="themes-img" style="background-image: url({{ theme.photo.url }})">
+                                    <div class="themes-name">{{ theme.name }}</div>
+                                </div>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="our-teachers">
+            <div class="wr">
+                <div class="b-title">
+                    Our Teachers
+                </div>
+                <div class="teachers-list">
+                    <ul>
+                        {% for auth_teacher in teachers %}
+                            <li class="teacher-block">
+                                <div class="teacher-photo">
+                                    <img src="{% if auth_teacher.photo %}
+                                        {{ auth_teacher.photo.url }}
+                                    {% else %}
+                                        {{ STATIC_PREFIX }}academy_site/img/photo.png
+                                    {% endif %}" alt="">
+                                </div>
+                                <div class="teacher-name">{{ auth_teacher.full_name }}</div>
+                                <div class="specialist">{{ auth_teacher.get_role }}</div>
+
+                                <div class="teacher-popup popup">
+                                    <div class="overlay"></div>
+                                    <div class="popup-inner">
+                                        <div class="close"></div>
+                                        <div class="teacher-info">
+                                            <div class="l-side">
+                                                <div class="teacher-photo">
+                                                    <img src="
+                                                            {% if auth_teacher.photo %}
+                                                            {{ auth_teacher.photo.url }}
+                                                            {% else %}
+                                                            {{ STATIC_PREFIX }}academy_site/img/photo.png
+                                                            {% endif %}" alt="">
+                                                </div>
+                                            </div>
+                                            <div class="r-side">
+                                                <div class="teacher-name">{{ auth_teacher.full_name }}</div>
+                                                <div class="contacts">
+                                                    {% if auth_teacher.adminprofile.phone %}
+                                                        <div class="contact-i">
+                                                            <div class="icon">
+                                                                <img src="{{ STATIC_PREFIX }}academy_site/img/tel.svg"
+                                                                     alt="">
+                                                            </div>
+                                                            <a href="tel:{{ auth_teacher.adminprofile.phone }}">{{ auth_teacher.adminprofile.phone }}</a>
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if auth_teacher.email %}
+                                                        <div class="contact-i">
+                                                            <div class="icon">
+                                                                <img src="{{ STATIC_PREFIX }}academy_site/img/mail.svg"
+                                                                     alt="">
+                                                            </div>
+                                                            <a href="mailto:{{ auth_teacher.email }}"
+                                                               class="mail">{{ auth_teacher.email }}</a>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <ul>
+                                            {% if auth_teacher.adminprofile.facebook_link %}
+                                                <li><a href="{{ auth_teacher.adminprofile.facebook_link }}">
+                                                    <img src="{{ STATIC_PREFIX }}academy_site/img/fb.svg" alt="">
+                                                </a></li>
+                                            {% endif %}
+                                            {% if auth_teacher.adminprofile.instagram_link %}
+                                                <li><a href="{{ auth_teacher.adminprofile.instagram_link }}">
+                                                    <img src="{{ STATIC_PREFIX }}academy_site/img/insta.svg" alt="">
+                                                </a></li>
+                                            {% endif %}
+                                            {% if auth_teacher.adminprofile.other_link %}
+                                                <li><a href="{{ auth_teacher.adminprofile.other_link }}">
+                                                    <img src="{{ STATIC_PREFIX }}academy_site/img/google.svg" alt="">
+                                                </a></li>
+                                            {% endif %}
+                                        </ul>
+                                        <p>{{ auth_teacher.adminprofile.bio }}</p>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="show-more">
+                        <img src="{{ STATIC_PREFIX }}academy_site/img/show-more.svg" alt="" class="show-more">
+                        <div>show more</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="teacher-show-more-popup popup">
+            <div class="overlay"></div>
+            <div class="popup-inner">
+                <div class="close"></div>
+                <div class="title">
+                    Teachers
+                </div>
+                <ul>
+                    {% for auth_teacher in teachers %}
+                        <li>
+                            <div class="teacher-photo info-teacher">
+                                <img src="{% if auth_teacher.photo %}
+                                        {{ auth_teacher.photo.url }}
+                                    {% else %}
+                                        {{ STATIC_PREFIX }}academy_site/img/photo.png
+                                    {% endif %}" alt="">
+                            </div>
+                            <div class="teacher-name">{{ auth_teacher.full_name }}</div>
+                            <div class="specialist">{{ auth_teacher.get_role }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="partners">
+            <div class="wr">
+                <div class="b-title">
+                    Partners
+                </div>
+                <ul class="partners-list">
+                    {% for partner in city.partners.all %}
+                        <li class="partners-i">
+                            <a href="{{ partner.link }}"
+                               style="background-image: url({{ partner.logo.url }});" title="{{ partner.name }}"></a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <section class="contact-us" id="contact-us">
+            <div class="wr">
+                <div class="b-title">
+                    Contact us
+                </div>
+                <form name="contact-form" class="contact-form" method="post"
+                      action="{% url 'academy_site:contact_us' %}">
+                    {% csrf_token %}
+                    <div class="input-top">
+                        {% for hidden_field in contact_us_form.hidden_fields %}
+                            {{ hidden_field.errors }}
+                            {{ hidden_field }}
+                        {% endfor %}
+                        <div class="input-wr">
+                            <label>Name</label>
+                            <input class="input-elem-form"
+                                   type="text"
+                                   name="{{ contact_us_form.name.name }}"
+                                   {% if contact_us_form.name.initial != None %}value="{{ contact_us_form.name.value }}"{% endif %}
+                                   {% if contact_us_form.name.field.required %}required{% endif %}>
+                        </div>
+                        <div class="input-wr">
+                            <label>Email</label>
+                            <input class="input-elem-form"
+                                   type="email"
+                                   name="{{ contact_us_form.email.name }}"
+                                   {% if contact_us_form.email.initial != None %}value="{{ contact_us_form.email.value }}"{% endif %}
+                                   {% if contact_us_form.email.field.required %}required{% endif %}>
+                        </div>
+                    </div>
+                    <div class="input-wr">
+                        <label>Massege</label>
+                        <textarea rows="10" cols="42"
+                                  name="{{ contact_us_form.message.name }}"
+                                  {% if contact_us_form.message.field.required %}required{% endif %}></textarea>
+                    </div>
+                    <div class="button-box">
+                        <button type="submit" class="button button-purple" id="form_submit">Send</button>
+                    </div>
+                </form>
+            </div>
+        </section>
     </div>
 {% endblock %}

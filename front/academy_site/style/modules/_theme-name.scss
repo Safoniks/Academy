@@ -1,27 +1,27 @@
-.theme-name{
+.theme-name {
   padding: 30px 0 66px 0;
-  .about-theme{
-    .wr{
-      .b-title{
+  .about-theme {
+    .wr {
+      .b-title {
         margin: 0 0 34px 0;
       }
-      p{
+      p {
         max-width: 802px;
         text-align: justify;
 
       }
-      .input-wr{
+      .input-wr {
         margin: 30px 0 46px 0;
         display: flex;
         justify-content: flex-end;
-        span{
+        span {
           position: relative;
         }
-        img{
+        img {
           position: absolute;
           padding: 11px 7px 11px 12px;
         }
-        input{
+        input {
           max-width: 276px;
           padding: 10px 39px;
           outline: none !important;
@@ -33,20 +33,20 @@
       }
     }
   }
-  .about-theme-wr{
-    .wr{
+  .about-theme-wr {
+    .wr {
       display: flex;
-      & > .r-side{
+      & > .r-side {
         flex-basis: 77%;
       }
-      .filter-checkbox{
+      .filter-checkbox {
         flex-basis: 23%;
         margin: 0 1% 0 0;
         background: rgba(218, 223, 234, .24);
         position: relative;
         padding-top: 34px;
         padding-bottom: 34px;
-        &:before{
+        &:before {
           content: '';
           position: absolute;
           right: 100%;
@@ -55,7 +55,7 @@
           bottom: 0;
           background: rgba(218, 223, 234, .24);
         }
-        .title-filter{
+        .title-filter {
           font-size: 20px;
           font-weight: bold;
           text-align: justify;
@@ -68,27 +68,27 @@
             margin: 0;
           }
         }
-        .title-head{
+        .title-head {
           font-size: 16px;
           font-weight: bold;
           color: #505363;
           margin: 0 0 11px 0;
         }
-        .checkbox-i{
+        .checkbox-i {
           position: relative;
           margin: 10px 0;
-          input{
+          input {
             width: 100%;
             height: 25px;
             cursor: pointer;
             opacity: 0;
           }
-          input:checked + label{
+          input:checked + label {
 
-            .checkbox{
+            .checkbox {
               background: #59218a;
               border: 1px solid #59218a;
-              i{
+              i {
                 transform: scale(1);
                 opacity: 1;
               }
@@ -109,11 +109,11 @@
             font-weight: normal;
             text-transform: none;
             color: #505363;
-            .filters{
+            .filters {
               display: flex;
               align-items: center;
             }
-            .checkbox{
+            .checkbox {
               width: 18px;
               height: 18px;
               background: #ffffff;
@@ -125,7 +125,7 @@
               justify-content: center;
               margin: 0 10px 0 0;
               transition: background .3s;
-              i{
+              i {
                 transform: scale(0);
                 color: #fff;
                 opacity: 0;
@@ -135,51 +135,64 @@
           }
         }
       }
-      ul{
+      ul {
         display: flex;
         flex-wrap: wrap;
-        li{
+        li {
           margin: 0 .6% 28px 0;
           flex-basis: 32%;
-          &:nth-child(3n){
+          &:nth-child(3n) {
             margin: 0 0 28px 0;
           }
-          a{
-            .course-img{
+          a {
+            .course-img {
               width: 275px;
               height: 200px;
               opacity: 0.8;
               border-radius: 5px;
-              background-color: rgba(89, 33, 138, 0.6);
               position: relative;
-              .inner{
+              background: rgba(89, 33, 138, 0.6) center no-repeat;
+              background-size: cover;
+              &:after {
+                position: absolute;
+                content: " ";
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 0;
+                background: rgba(89, 33, 138, 0.6) center no-repeat;
+              }
+
+              .inner {
                 position: absolute;
                 top: 50%;
                 left: 50%;
-                transform: translate(-50%,-50%);
+                transform: translate(-50%, -50%);
                 color: #ffffff;
                 font-family: HelveticaNeue;
                 font-size: 14px;
                 font-weight: 500;
                 text-align: justify;
-                .course-name{
+                z-index: 10;
+                .course-name {
                   font-size: 20px;
                   font-weight: bold;
                 }
-                .course-data{
+                .course-data {
                   display: flex;
                   justify-content: space-between;
                   align-items: center;
                   white-space: nowrap;
                   margin: 15px 0 15px 0;
-                  span{
+                  span {
                     margin: 0 0 0 15px;
                   }
                 }
-                .number{
+                .number {
                   display: flex;
                   align-items: center;
-                  span{
+                  span {
                     margin: 0 0 0 15px;
                   }
                 }
@@ -192,12 +205,11 @@
   }
 }
 
-@media only screen
-and (max-width: 1135px) {
-  .theme-name .about-theme-wr .wr ul li{
+@media only screen and (max-width: 1135px) {
+  .theme-name .about-theme-wr .wr ul li {
     margin: 0 .6% 28px 0;
     flex-basis: 32%;
-    &:nth-child(3n){
+    &:nth-child(3n) {
       margin: 0 .6% 28px 0;
     }
   }
