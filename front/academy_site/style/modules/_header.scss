@@ -75,12 +75,14 @@ header {
       height: 8vh;
       ul.nav{
         display: flex;
+        li{
+          margin: 0 25px 0 0;
+        }
         a{
           font-family: Montserrat;
           font-weight: bold;
           letter-spacing: 0.1px;
           color: #505363;
-          margin: 0 25px 0 0;
           position: relative;
           cursor: pointer;
           white-space: nowrap;
@@ -107,6 +109,9 @@ header {
         display: flex;
         align-items: center;
         justify-content: center;
+        li{
+          margin: 0;
+        }
         a{
           font-family: Montserrat;
           font-size: 14px;
@@ -115,6 +120,7 @@ header {
           color: #505363;
           display: block;
           padding: 0 0 0 7px;
+          margin: 0;
         }
         .english{
           color: #59218a;

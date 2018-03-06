@@ -8,13 +8,16 @@
       display: flex;
       flex-wrap: wrap;
       border-bottom: solid 1px #8c97b2;
+      li{
+        margin: 0 2% 30px 0;
+      }
       .partners-i a{
         display: inline-block;
         width: 100px;
         height: 100px;
         background: #d8d8d8 center no-repeat;
         background-size: cover;
-        margin: 0 1% 30px 0;
+        //margin: 0 1% 30px 0;
         flex-basis: 12.5%;
       }
     }

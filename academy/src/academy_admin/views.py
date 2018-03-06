@@ -15,6 +15,7 @@ from .forms import (
     ProfileForm,
     ChangePasswordForm,
     AddLessonForm,
+    ContentForm,
 )
 from backend import login, logout
 from decorators import (
@@ -24,8 +25,9 @@ from decorators import (
     superuser_required,
 )
 
-from academy_site.models import City, Partner, AdminProfile, Theme, Course, Lesson
+from academy_site.models import City, Partner, Theme, Course, Lesson
 from academy_site.choices import *
+from .choices import *
 
 AuthUser = get_user_model()
 
@@ -72,10 +74,55 @@ def change_password(request):
 @staff_user_login_required(login_url='academy_admin:login')
 @superuser_required
 def homepage(request):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:homepage')
+    if request.method == 'POST':
+        form = ContentForm(request.POST, request.FILES, page=HOMEPAGE)
+        if form.is_valid():
+            form.save()
+            return redirect(redirect_to)
+    else:
+        form = ContentForm(page=HOMEPAGE)
     context = {
-        'user': request.user
+        'user': request.user,
+        'form': form,
     }
     return render(request, 'academy_admin/homepage.html', context)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@superuser_required
+def workboek(request):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:workboek')
+    if request.method == 'POST':
+        form = ContentForm(request.POST, request.FILES, page=WORKBOEK)
+        if form.is_valid():
+            form.save()
+            return redirect(redirect_to)
+    else:
+        form = ContentForm(page=WORKBOEK)
+    context = {
+        'user': request.user,
+        'form': form,
+    }
+    return render(request, 'academy_admin/workboek.html', context)
+
+
+@staff_user_login_required(login_url='academy_admin:login')
+@superuser_required
+def workgroep(request):
+    redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:workgroep')
+    if request.method == 'POST':
+        form = ContentForm(request.POST, request.FILES, page=WORKGROEP)
+        if form.is_valid():
+            form.save()
+            return redirect(redirect_to)
+    else:
+        form = ContentForm(page=WORKGROEP)
+    context = {
+        'user': request.user,
+        'form': form,
+    }
+    return render(request, 'academy_admin/workgroep.html', context)
 
 
 @staff_user_login_required(login_url='academy_admin:login')

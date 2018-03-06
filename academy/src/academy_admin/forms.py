@@ -1,9 +1,12 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from academy_site.models import City, Partner, AdminProfile, Theme, Course, Lesson
+from .models import Content
 from academy_site.choices import *
+from .choices import *
 
 AuthUser = get_user_model()
 
@@ -449,3 +452,23 @@ class ProfileForm(forms.Form):
 
         data['last_update'] = timezone.now()
         AdminProfile.objects.filter(auth_user=auth_user).update(**data)
+
+
+class ContentForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        page = kwargs.pop('page', None)
+        super(ContentForm, self).__init__(*args, **kwargs)
+        fields_name = CONTENT_MAP[page]
+        if page == HOMEPAGE:
+            fields_name += CONTENT_MAP[COMMON]
+        for field_name in fields_name:
+            try:
+                content = Content.objects.get(personal_name=field_name)
+                self.fields[field_name] = forms.CharField(initial=content.data, required=False)
+            except ObjectDoesNotExist:
+                pass
+
+    def save(self):
+        data = self.cleaned_data
+        for content_name in data:
+            Content.objects.filter(personal_name=content_name).update(data=data[content_name])

@@ -1,7 +1,3 @@
-import os
-import uuid
-from werkzeug.utils import secure_filename
-
 from django.template.defaultfilters import slugify
 from django.conf import settings
 from django.db import models
@@ -12,13 +8,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.urls import reverse
 
+from utils import get_image_path
 from .validators import positive_number
 from .choices import *
-
-
-def get_image_path(instance, filename, dir_name):
-    photo_name = str(uuid.uuid4()) + '.' + secure_filename(filename).rsplit('.', 1)[-1]
-    return os.path.join(dir_name, photo_name)
 
 
 class AuthUserManager(BaseUserManager):

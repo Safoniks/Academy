@@ -1,7 +1,7 @@
 {% if user.is_superuser %}<div><a href="{% url 'academy_admin:homepage' %}">Homepage</a></div>{% endif %}
 {% if user.is_admin %}<div><a href="{% url 'academy_admin:cities' %}">Regions</a></div>{% endif %}
-{% if user.is_superuser %}<div><a href="{% url 'academy_admin:homepage' %}">Wokrboek</a></div>{% endif %}
-{% if user.is_superuser %}<div><a href="{% url 'academy_admin:homepage' %}">Wokrgroep</a></div>{% endif %}
+{% if user.is_superuser %}<div><a href="{% url 'academy_admin:workboek' %}">Wokrboek</a></div>{% endif %}
+{% if user.is_superuser %}<div><a href="{% url 'academy_admin:workgroep' %}">Wokrgroep</a></div>{% endif %}
 {% if user.is_admin %}<div><a href="{% url 'academy_admin:homepage' %}">Newsletters</a></div>{% endif %}
 {% if user.is_superuser %}<div><a href="{% url 'academy_admin:homepage' %}">Statistics</a></div>{% endif %}
 {% if user.is_admin %}<div><a href="{% url 'academy_admin:partners' %}">Partners</a></div>{% endif %}

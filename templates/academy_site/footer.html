@@ -34,10 +34,19 @@
         <div class="social">
             <p>We in social networks</p>
             <ul class="social-links">
-                <li><a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
-                <li><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
-                <li><a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
-                <li><a href="#"><i class="fa fa-youtube-play" aria-hidden="true"></i></a></li>
+                {% if common_social_twitter %}
+                    <li><a href="{{ common_social_twitter }}"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                {% endif %}
+                {% if common_social_facebook %}
+                    <li><a href="{{ common_social_facebook }}"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+                    </li>
+                {% endif %}
+                {% if common_social_linkedin %}
+                    <li><a href="{{ common_social_linkedin }}"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+                {% endif %}
+                {% if common_social_youtube %}
+                    <li><a href="{{ common_social_youtube }}"><i class="fa fa-youtube-play" aria-hidden="true"></i></a></li>
+                {% endif %}
             </ul>
         </div>
     </div>

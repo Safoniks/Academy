@@ -1,4 +1,7 @@
+import os
+import uuid
 import hashlib
+from werkzeug.utils import secure_filename
 from django.utils.crypto import get_random_string
 from django.conf import settings
 from django.urls import reverse
@@ -6,7 +9,11 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 
 from django.contrib.auth import get_user_model
-AuthUser = get_user_model()
+
+
+def get_image_path(instance, filename, dir_name):
+    photo_name = str(uuid.uuid4()) + '.' + secure_filename(filename).rsplit('.', 1)[-1]
+    return os.path.join(dir_name, photo_name)
 
 
 def generate_confirmation_code(email):
@@ -15,6 +22,7 @@ def generate_confirmation_code(email):
 
 
 def send_confirmation_email(instance):
+    AuthUser = get_user_model()
     plaintext = get_template('academy_site/inclusion/confirmation_email.txt')
     htmly = get_template('academy_site/inclusion/confirmation_email.html')
 

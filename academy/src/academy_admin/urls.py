@@ -5,6 +5,8 @@ from . import views
 app_name = 'academy_admin'
 urlpatterns = [
     url(r'^$', views.homepage, name='homepage'),
+    url(r'^workboek/$', views.workboek, name='workboek'),
+    url(r'^workgroep/$', views.workgroep, name='workgroep'),
     url(r'^cities/$', views.cities, name='cities'),
     url(r'^cities/add/$', views.add_city, name='add_city'),
     url(r'^cities/(?P<pk>\d+)/$', views.city_detail, name='city_detail'),

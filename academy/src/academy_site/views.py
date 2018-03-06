@@ -34,6 +34,7 @@ def home(request):
         'signin_form': SignInForm(),
         'contact_us_form': ContactUsForm(email_to=settings.SITE_SETTINGS['contact_email']),
         'reset_password_form': ResetPasswordForm(),
+        **request.common_content,
     }
     return render(request, 'academy_site/home.html', context)
 
@@ -45,6 +46,7 @@ def workgroup(request):
         'signin_form': SignInForm(),
         'contact_us_form': ContactUsForm(email_to=settings.SITE_SETTINGS['contact_email']),
         'reset_password_form': ResetPasswordForm(),
+        **request.common_content,
     }
     return render(request, 'academy_site/workgroup.html', context)
 
@@ -55,6 +57,7 @@ def werkboek(request):
         'signup_form': SignUpForm(),
         'signin_form': SignInForm(),
         'reset_password_form': ResetPasswordForm(),
+        **request.common_content,
     }
     return render(request, 'academy_site/werkboek.html', context)
 
@@ -201,6 +204,7 @@ def profile(request):
     context = {
         'user': user,
         'course_subscribes': user.siteuser.get_active_course_subscribes(),
+        **request.common_content,
     }
     return render(request, 'academy_site/profile.html', context)
 
@@ -221,6 +225,7 @@ def profile_edit(request):
         'user': user,
         'edit_form': form,
         'change_password_form': ChangePassword(),
+        **request.common_content,
     }
     return render(request, 'academy_site/profile_edit.html', context)
 
@@ -239,6 +244,7 @@ def city_detail(request, city_slug):
         'teachers': AuthUser.objects.teachers(city=city),
         'contact_us_form': ContactUsForm(email_to=city.email),
         'reset_password_form': ResetPasswordForm(),
+        **request.common_content,
     }
     return render(request, 'academy_site/city_detail.html', context)
 
@@ -257,6 +263,7 @@ def theme_detail(request, city_slug, theme_slug):
         'theme': theme,
         'courses': courses,
         'reset_password_form': ResetPasswordForm(),
+        **request.common_content,
     }
     return render(request, 'academy_site/theme_detail.html', context)
 
@@ -284,6 +291,7 @@ def course_detail(request, city_slug, theme_slug, course_slug):
         'course': course,
         'reset_password_form': ResetPasswordForm(),
         'subscribed': subscribed,
+        **request.common_content,
     }
     return render(request, 'academy_site/course_detail.html', context)
 
@@ -317,6 +325,7 @@ def signup_course(request, city_slug, theme_slug, course_slug):
         'course': course,
         'form': form,
         'reset_password_form': ResetPasswordForm(),
+        **request.common_content,
     }
     return render(request, 'academy_site/signup_course.html', context)
 

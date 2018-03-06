@@ -34,6 +34,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'academy.src.middleware.MyAuthenticationMiddleware',
+    'academy.src.middleware.CommonContentMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -105,6 +106,7 @@ PARTNER_LOGOS_DIR_NAME = 'partner-logos'
 CITY_PHOTOS_DIR_NAME = 'city-photos'
 THEME_PHOTOS_DIR_NAME = 'theme-photos'
 COURSE_PHOTOS_DIR_NAME = 'course-photos'
+CONTENT_PHOTOS_DIR_NAME = 'content-photos'
 
 SERVER_EMAIL = 'root@localhost'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
