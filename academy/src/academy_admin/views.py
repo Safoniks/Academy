@@ -346,49 +346,51 @@ def courses(request):
 def add_course(request):
     redirect_to = request.GET.get(settings.REDIRECT_FIELD_NAME, 'academy_admin:courses')
     user = request.user
+
+    selected_city_pk = request.GET.get('city', None)
+
+    if not selected_city_pk or user.is_moderator:
+        selected_city_pk = getattr(user.city, 'pk', None)
+
+    all_cities = City.objects.all()
+    try:
+        if selected_city_pk:
+            selected_city = all_cities.get(pk=selected_city_pk)
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist:
+        selected_city = all_cities.first()
+
+    city_themes = selected_city.theme_set.all()
+    city_teachers = AuthUser.objects.teachers(city=selected_city)
+    city_partners = selected_city.partners.all()
+    form_selects = {
+        'themes': city_themes,
+        'teachers': city_teachers,
+        'partners': city_partners,
+    }
+
+    selected_theme_pk = request.GET.get('theme', None)
+    try:
+        selected_theme = city_themes.get(pk=selected_theme_pk)
+    except ObjectDoesNotExist:
+        selected_theme = None
+
     if request.method == 'POST':
-        form = CourseForm(request.POST, request.FILES)
+        form = CourseForm(request.POST, request.FILES, **form_selects)
         if form.is_valid():
             form.save()
             return redirect(redirect_to)
     else:
-        selected_city_pk = request.GET.get('city', None)
-
-        if not selected_city_pk or user.is_moderator:
-            selected_city_pk = getattr(user.city, 'pk', None)
-
-        all_cities = City.objects.all()
-        try:
-            if selected_city_pk:
-                selected_city = all_cities.get(pk=selected_city_pk)
-            else:
-                raise ObjectDoesNotExist
-        except ObjectDoesNotExist:
-            selected_city = all_cities.first()
-
-        city_themes = selected_city.theme_set.all()
-        city_teachers = AuthUser.objects.teachers(city=selected_city)
-        city_partners = selected_city.partners.all()
-        form_selects = {
-            'themes': city_themes,
-            'teachers': city_teachers,
-            'partners': city_partners,
-        }
-
-        selected_theme_pk = request.GET.get('theme', None)
-        try:
-            selected_theme = city_themes.get(pk=selected_theme_pk)
-        except ObjectDoesNotExist:
-            selected_theme = None
-
         form = CourseForm(selected_theme=selected_theme, **form_selects)
-        context = {
-            'user': user,
-            'cities': all_cities,
-            'selected_city': selected_city,
-            'add_course_form': form,
-        }
-        return render(request, 'academy_admin/add_course.html', context)
+
+    context = {
+        'user': user,
+        'cities': all_cities,
+        'selected_city': selected_city,
+        'add_course_form': form,
+    }
+    return render(request, 'academy_admin/add_course.html', context)
 
 
 @staff_user_login_required(login_url='academy_admin:login')
